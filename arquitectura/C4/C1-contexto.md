@@ -1,39 +1,47 @@
 
-# C1 - Diagrama de Contexto
+# C1 — Diagrama de Contexto del Sistema
 
-## 1. Descripción
+**Proyecto:** Sistema de Gestión de Programas Sociales de Huamanga  
+**Modelo:** C4 — Nivel 1: Contexto  
+**Propósito:** Identificar los usuarios, el sistema y sus relaciones externas.
 
-El diagrama de contexto muestra el Sistema de Gestión de Programas Sociales de Huamanga y su relación con los usuarios y los servicios externos.
-
-Los dirigentes de los comités registran y actualizan la información de los beneficiarios. El personal de la Subgerencia supervisa los registros, revisa alertas y consulta reportes. Los beneficiarios pueden recibir notificaciones relacionadas con los programas sociales.
-
-## 2. Diagrama
+## Diagrama de contexto
 
 ```mermaid
-flowchart LR
-    Dirigente["Dirigente de Comité"]
-    Personal["Personal de la Subgerencia"]
-    Beneficiario["Beneficiario"]
-    Sistema["Sistema de Gestión de Programas Sociales<br/>ASP.NET Core MVC 9"]
-    Archivos["Archivos históricos<br/>Excel y registros en papel"]
-    Mensajeria["Servicio externo<br/>SMS / WhatsApp"]
+flowchart TB
+    %% Actores
+    DIR(["👤 Dirigente de Comité<br/>Registra y actualiza beneficiarios"])
+    SUB(["👤 Personal de la Subgerencia<br/>Supervisa y consulta información"])
+    BEN(["👤 Beneficiario<br/>Recibe notificaciones"])
 
-    Dirigente -->|"Registra y actualiza beneficiarios"| Sistema
-    Personal -->|"Supervisa y consulta reportes"| Sistema
-    Sistema -->|"Envía notificaciones"| Mensajeria
-    Mensajeria -->|"Entrega mensajes"| Beneficiario
-    Archivos -->|"Información para revisión e importación"| Sistema
+    %% Sistema principal
+    SYS["<b>SISTEMA DE GESTIÓN DE PROGRAMAS SOCIALES</b><br/><br/>Aplicación web para gestionar beneficiarios,<br/>validaciones, revalidaciones y reportes"]
+
+    %% Sistemas externos
+    HIST[("Archivos históricos<br/>Excel y registros en papel")]
+    MSG["Servicio externo de mensajería<br/>SMS / WhatsApp"]
+
+    %% Relaciones
+    DIR -->|"Registra y actualiza datos"| SYS
+    SUB -->|"Supervisa, consulta y genera reportes"| SYS
+    HIST -.->|"Fuente para revisión e importación"| SYS
+    SYS -->|"Solicita envío de mensajes"| MSG
+    MSG -->|"Entrega notificaciones"| BEN
+
+    %% Estilos
+    classDef actor fill:#EAF2F8,stroke:#2874A6,color:#154360,stroke-width:1.5px
+    classDef system fill:#17365D,stroke:#0B1F3A,color:#FFFFFF,stroke-width:2.5px
+    classDef external fill:#E8F6F3,stroke:#148F77,color:#145A4A,stroke-width:1.5px
+
+    class DIR,SUB,BEN actor
+    class SYS system
+    class HIST,MSG external
+
+    linkStyle default stroke:#566573,stroke-width:1.5px,color:#273746
 ```
 
-## 3. Elementos del diagrama
+## Descripción
 
-- **Dirigente de Comité:** registra, actualiza e inactiva beneficiarios y puede trabajar sin conexión cuando la funcionalidad está disponible.
-- **Personal de la Subgerencia:** supervisa la información, revisa posibles duplicados y consulta reportes de cobertura.
-- **Beneficiario:** persona inscrita en un programa social que puede recibir notificaciones.
-- **Sistema:** aplicación encargada de gestionar la información y las operaciones de los programas sociales.
-- **Archivos históricos:** hojas de cálculo y registros en papel que sirven como fuentes para revisar o importar información.
-- **Servicio SMS / WhatsApp:** servicio externo previsto para enviar notificaciones.
+El sistema centraliza la gestión de beneficiarios de programas sociales, como Vaso de Leche y Comedores Populares. Los dirigentes registran y actualizan información, mientras que el personal de la Subgerencia supervisa los datos y consulta reportes. Los archivos históricos sirven como fuente de información y el servicio externo de mensajería permite contemplar el envío de notificaciones.
 
-## 4. Alcance
-
-El sistema contempla la gestión de beneficiarios de programas como Vaso de Leche y Comedores Populares. Las integraciones con RENIEC y SISFOH no forman parte de la primera versión documentada.
+**Nota:** las integraciones con RENIEC y SISFOH no se representan porque no forman parte de la primera versión documentada.

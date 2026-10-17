@@ -1,63 +1,79 @@
 
-# C2 - Diagrama de Contenedores
+# C2 — Diagrama de Contenedores
 
-## 1. Descripción
+**Proyecto:** Sistema de Gestión de Programas Sociales de Huamanga  
+**Modelo:** C4 — Nivel 2: Contenedores  
+**Propósito:** Mostrar las principales unidades tecnológicas y sus comunicaciones.
 
-El diagrama de contenedores presenta la estructura técnica general del Sistema de Gestión de Programas Sociales de Huamanga.
-
-La solución se plantea como una aplicación web desarrollada con ASP.NET Core MVC 9, utilizando C# para la lógica de aplicación, Razor para las vistas, Entity Framework Core para el acceso a datos y SQL Server para el almacenamiento persistente.
-
-También se contempla el uso de capacidades PWA para facilitar el trabajo sin conexión y la sincronización de información cuando se recupere la conectividad.
-
-## 2. Diagrama
+## Diagrama de contenedores
 
 ```mermaid
 flowchart TB
-    Usuario["Dirigente de Comité / Personal de la Subgerencia"]
+    USER(["Usuario<br/>Dirigente / Personal municipal"])
 
-    subgraph Aplicacion["Aplicación web - ASP.NET Core MVC 9"]
-        Vistas["Interfaz web<br/>Razor / .cshtml"]
-        Controladores["Controladores MVC<br/>Recepción de solicitudes"]
-        Servicios["Servicios de aplicación<br/>Reglas y procesos de negocio"]
-        Datos["Acceso a datos<br/>Repository / Unit of Work"]
+    subgraph CLIENTE["01 · CAPA DE PRESENTACIÓN"]
+        direction TB
+        WEB["Aplicación web<br/>Vistas Razor / .cshtml"]
+        PWA["Capacidades PWA<br/>Trabajo sin conexión"]
+        LOCAL[("Almacenamiento local<br/>Operaciones pendientes")]
     end
 
-    PWA["Capacidades PWA<br/>Trabajo sin conexión"]
-    Local["Almacenamiento local<br/>Datos pendientes de sincronización"]
-    EF["Entity Framework Core"]
-    BD[("SQL Server<br/>Base de datos")]
-    Mensajeria["Servicio externo<br/>SMS / WhatsApp"]
-    Historicos["Archivos históricos<br/>Excel y registros en papel"]
+    subgraph APLICACION["02 · APLICACIÓN — ASP.NET CORE MVC 9"]
+        direction TB
+        CTRL["Controladores MVC<br/>Gestión de solicitudes"]
+        SERV["Servicios de aplicación<br/>Reglas de negocio"]
+        REPO["Repository / Unit of Work<br/>Acceso organizado a datos"]
+    end
 
-    Usuario -->|"Utiliza"| Vistas
-    Vistas -->|"Solicitudes HTTP"| Controladores
-    Controladores -->|"Invoca operaciones"| Servicios
-    Servicios -->|"Consulta y persiste información"| Datos
-    Datos --> EF
-    EF --> BD
+    subgraph DATOS["03 · PERSISTENCIA"]
+        direction TB
+        EF["Entity Framework Core"]
+        DB[("SQL Server<br/>Base de datos")]
+    end
 
-    Usuario -->|"Puede trabajar sin conexión"| PWA
-    PWA --> Local
-    Local -.->|"Sincronización al recuperar conexión"| Controladores
+    subgraph EXTERNOS["04 · SERVICIOS Y FUENTES EXTERNAS"]
+        direction TB
+        SMS["Servicio de mensajería<br/>SMS / WhatsApp"]
+        XLS[("Archivos históricos<br/>Excel / registros en papel")]
+    end
 
-    Servicios -->|"Solicita envío de notificaciones"| Mensajeria
-    Historicos -->|"Datos para revisión o importación"| Servicios
+    USER -->|"Usa el sistema"| WEB
+    WEB -->|"Solicitudes HTTP"| CTRL
+    CTRL -->|"Invoca operaciones"| SERV
+    SERV -->|"Consulta y modifica datos"| REPO
+    REPO --> EF
+    EF -->|"Lee y guarda información"| DB
+
+    USER -.->|"Cuando no hay conexión"| PWA
+    PWA <--> LOCAL
+    LOCAL -.->|"Sincronización al recuperar conexión"| CTRL
+
+    SERV -->|"Solicita notificaciones"| SMS
+    XLS -.->|"Información para importar"| SERV
+
+    %% Estilos
+    classDef user fill:#EAF2F8,stroke:#2874A6,color:#154360,stroke-width:1.5px
+    classDef frontend fill:#D6EAF8,stroke:#2874A6,color:#154360,stroke-width:1.5px
+    classDef business fill:#D5F5E3,stroke:#239B56,color:#145A32,stroke-width:1.5px
+    classDef persistence fill:#FCF3CF,stroke:#B7950B,color:#7D6608,stroke-width:1.5px
+    classDef external fill:#F4ECF7,stroke:#884EA0,color:#512E5F,stroke-width:1.5px
+
+    class USER user
+    class WEB,PWA,LOCAL frontend
+    class CTRL,SERV,REPO business
+    class EF,DB persistence
+    class SMS,XLS external
+
+    style CLIENTE fill:#F8FBFD,stroke:#2874A6,stroke-width:1.5px
+    style APLICACION fill:#F7FCF8,stroke:#239B56,stroke-width:1.5px
+    style DATOS fill:#FFFCF2,stroke:#B7950B,stroke-width:1.5px
+    style EXTERNOS fill:#FBF7FC,stroke:#884EA0,stroke-width:1.5px
+
+    linkStyle default stroke:#566573,stroke-width:1.4px,color:#273746
 ```
 
-## 3. Descripción de los contenedores y elementos
+## Descripción
 
-- **Interfaz web:** presenta formularios, listados y reportes a los usuarios mediante vistas Razor.
-- **Controladores MVC:** reciben las solicitudes y coordinan las operaciones de la aplicación.
-- **Servicios de aplicación:** concentran las reglas de negocio, como el registro de beneficiarios, la validación de posibles duplicados y la generación de reportes.
-- **Acceso a datos:** organiza las consultas y operaciones de persistencia mediante los patrones Repository y Unit of Work descritos en la arquitectura.
-- **Entity Framework Core:** permite interactuar con la base de datos desde C#.
-- **SQL Server:** almacena la información persistente del sistema.
-- **Capacidades PWA y almacenamiento local:** apoyan el trabajo sin conexión y el mantenimiento de operaciones pendientes hasta recuperar la conectividad.
-- **Servicio SMS / WhatsApp:** representa la integración externa prevista para el envío de notificaciones.
-- **Archivos históricos:** representan las fuentes de información que pueden revisarse o importarse durante la migración.
+La solución se plantea como un monolito modular desarrollado con ASP.NET Core MVC 9 y C#. La interfaz utiliza vistas Razor, los servicios concentran las reglas del negocio y el acceso a datos se organiza mediante Repository y Unit of Work. Entity Framework Core permite la comunicación con SQL Server.
 
-## 4. Consideraciones técnicas
-
-La aplicación se organiza como un monolito modular: sus funcionalidades se separan por responsabilidades, pero forman parte de una misma aplicación.
-
-El almacenamiento local, la sincronización y la integración con mensajería deben implementarse de acuerdo con los mecanismos definidos en el proyecto. El diagrama representa la arquitectura documentada y no confirma por sí solo que todas estas funciones ya estén implementadas.
+Las capacidades PWA y el almacenamiento local representan el soporte previsto para trabajar sin conexión y sincronizar operaciones pendientes. Su funcionamiento depende de la implementación concreta del proyecto.

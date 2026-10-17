@@ -1,139 +1,131 @@
 
-# C4 - Diagrama de Código
+# C4 — Diagrama de Código
 
-## 1. Descripción
+**Proyecto:** Sistema de Gestión de Programas Sociales de Huamanga  
+**Modelo:** C4 — Nivel 4: Código  
+**Propósito:** Representar las clases conceptuales y sus relaciones.
 
-El diagrama de código representa, mediante clases y relaciones, una posible organización interna del Sistema de Gestión de Programas Sociales.
-
-Se consideran clases relacionadas con los beneficiarios, los comités, los programas sociales, la auditoría, los servicios de negocio y el acceso a datos.
-
-Este diagrama es conceptual. Los nombres, atributos, métodos y relaciones deben verificarse y ajustarse según el código fuente real del sistema.
-
-## 2. Diagrama de clases
+## Diagrama UML de clases
 
 ```mermaid
 classDiagram
-    class Beneficiario {
-        +int Id
-        +string DNI
-        +string Nombres
-        +string Apellidos
-        +bool Activo
-        +DateTime FechaRegistro
+    direction TB
+
+    namespace Dominio {
+        class Beneficiario {
+            +int Id
+            +string DNI
+            +string Nombres
+            +string Apellidos
+            +bool Activo
+            +DateTime FechaRegistro
+        }
+
+        class Comite {
+            +int Id
+            +string Nombre
+            +string Ubicacion
+        }
+
+        class ProgramaSocial {
+            +int Id
+            +string Nombre
+            +string Descripcion
+        }
+
+        class Auditoria {
+            +int Id
+            +string Accion
+            +DateTime Fecha
+            +string Usuario
+        }
     }
 
-    class Comite {
-        +int Id
-        +string Nombre
-        +string Ubicacion
+    namespace Aplicacion {
+        class BeneficiarioController {
+            +Index()
+            +Create()
+            +Edit()
+            +Details()
+        }
+
+        class BeneficiarioService {
+            +Registrar()
+            +Actualizar()
+            +Inactivar()
+        }
+
+        class ValidadorDuplicadosService {
+            +ValidarDNI()
+            +BuscarDuplicados()
+        }
+
+        class RevalidacionService {
+            +RevalidarBeneficiario()
+        }
+
+        class NotificacionService {
+            +EnviarNotificacion()
+        }
+
+        class ReporteService {
+            +GenerarReporte()
+            +ExportarExcel()
+            +ExportarPDF()
+        }
     }
 
-    class ProgramaSocial {
-        +int Id
-        +string Nombre
-        +string Descripcion
-    }
+    namespace Infraestructura {
+        class BeneficiarioRepository {
+            +ObtenerPorId()
+            +ObtenerPorDNI()
+            +Agregar()
+            +Actualizar()
+        }
 
-    class Auditoria {
-        +int Id
-        +string Accion
-        +DateTime Fecha
-        +string Usuario
-    }
+        class UnitOfWork {
+            +GuardarCambios()
+        }
 
-    class BeneficiarioController {
-        +Index()
-        +Create()
-        +Edit()
-        +Details()
-    }
-
-    class BeneficiarioService {
-        +Registrar()
-        +Actualizar()
-        +Inactivar()
-    }
-
-    class ValidadorDuplicadosService {
-        +ValidarDNI()
-        +BuscarDuplicados()
-    }
-
-    class RevalidacionService {
-        +RevalidarBeneficiario()
-    }
-
-    class NotificacionService {
-        +EnviarNotificacion()
-    }
-
-    class ReporteService {
-        +GenerarReporte()
-        +ExportarExcel()
-        +ExportarPDF()
-    }
-
-    class BeneficiarioRepository {
-        +ObtenerPorId()
-        +ObtenerPorDNI()
-        +Agregar()
-        +Actualizar()
-    }
-
-    class UnitOfWork {
-        +GuardarCambios()
-    }
-
-    class ApplicationDbContext {
-        +DbSet Beneficiarios
-        +DbSet Comites
-        +DbSet ProgramasSociales
-        +DbSet Auditorias
+        class ApplicationDbContext {
+            +DbSet Beneficiarios
+            +DbSet Comites
+            +DbSet ProgramasSociales
+            +DbSet Auditorias
+        }
     }
 
     BeneficiarioController --> BeneficiarioService : utiliza
-    BeneficiarioService --> ValidadorDuplicadosService : valida
-    BeneficiarioService --> BeneficiarioRepository : consulta y modifica
+    BeneficiarioService --> ValidadorDuplicadosService : valida DNI
+    BeneficiarioService --> BeneficiarioRepository : consulta datos
     BeneficiarioService --> UnitOfWork : confirma cambios
-    RevalidacionService --> BeneficiarioRepository : consulta beneficiarios
-    NotificacionService ..> Beneficiario : obtiene destinatario
-    ReporteService --> BeneficiarioRepository : consulta datos
+
+    RevalidacionService --> BeneficiarioRepository : consulta padrón
+    ReporteService --> BeneficiarioRepository : obtiene información
+    NotificacionService ..> Beneficiario : destinatario
+
     BeneficiarioRepository --> ApplicationDbContext : accede a datos
     UnitOfWork --> ApplicationDbContext : guarda cambios
 
     Comite "1" --> "0..*" Beneficiario : agrupa
     ProgramaSocial "1" --> "0..*" Beneficiario : registra
-    Beneficiario "1" --> "0..*" Auditoria : genera historial
+    Beneficiario "1" --> "0..*" Auditoria : historial
+
+    classDef domain fill:#D6EAF8,stroke:#2874A6,color:#154360
+    classDef application fill:#D5F5E3,stroke:#239B56,color:#145A32
+    classDef infrastructure fill:#FCF3CF,stroke:#B7950B,color:#7D6608
 ```
 
-## 3. Descripción de las clases
+## Descripción
 
-- **Beneficiario:** representa a una persona registrada en un programa social.
-- **Comite:** representa al comité relacionado con la gestión de beneficiarios.
-- **ProgramaSocial:** identifica el programa social correspondiente.
-- **Auditoria:** representa los registros históricos de las operaciones realizadas.
-- **BeneficiarioController:** recibe las solicitudes relacionadas con los beneficiarios.
-- **BeneficiarioService:** concentra las operaciones principales del negocio.
-- **ValidadorDuplicadosService:** contempla la validación de DNI y la búsqueda de posibles duplicados.
-- **RevalidacionService:** representa las operaciones de revalidación de beneficiarios.
-- **NotificacionService:** coordina las notificaciones.
-- **ReporteService:** prepara reportes y operaciones de exportación.
-- **BeneficiarioRepository:** representa el acceso a los datos de beneficiarios.
-- **UnitOfWork:** representa la coordinación de los cambios que se guardan en la base de datos.
-- **ApplicationDbContext:** representa el contexto de Entity Framework Core.
+El modelo divide las clases en tres grupos conceptuales:
 
-## 4. Relación con la arquitectura
+- **Dominio:** contiene las entidades principales del negocio, como beneficiarios, comités, programas sociales y auditoría.
+- **Aplicación:** representa los controladores y servicios que coordinan las operaciones del sistema.
+- **Infraestructura:** representa el acceso a datos mediante repositorios, Unit of Work y Entity Framework Core.
 
-El diagrama sigue una separación de responsabilidades:
+Las relaciones muestran cómo los controladores utilizan servicios, los servicios acceden a los repositorios y los elementos de persistencia interactúan con el contexto de base de datos.
 
-1. El controlador recibe las solicitudes de la interfaz.
-2. El servicio aplica las reglas de negocio.
-3. Los repositorios permiten consultar y modificar información.
-4. Entity Framework Core gestiona la comunicación con la base de datos.
-5. Las entidades representan los datos principales del dominio.
+## Consideración importante
 
-## 5. Consideraciones
-
-Este diagrama no garantiza que las clases indicadas existan actualmente en el repositorio. Antes de considerarlo el nivel de código definitivo, se deben revisar los archivos `.cs` y sustituir los nombres, atributos, métodos y relaciones por los que realmente estén implementados.
-
-Los métodos del controlador también son ilustrativos y no representan firmas completas de ASP.NET Core MVC.
+Los nombres, atributos, métodos y relaciones de este diagrama son ilustrativos. Antes de presentar el nivel C4 como una representación exacta del código, deben verificarse los archivos `.cs` del repositorio y ajustarse las clases a la implementación real.
