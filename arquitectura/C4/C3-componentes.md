@@ -1,110 +1,128 @@
 
-# C3 — Diagrama de Componentes
+# C4 — Nivel 3: Diagrama de Componentes
 
-**Proyecto:** Sistema de Gestión de Programas Sociales de Huamanga  
-**Modelo:** C4 — Nivel 3: Componentes  
-**Propósito:** Detallar las responsabilidades internas de la aplicación.
+## Sistema de Gestión de Programas Sociales de Huamanga
 
-## Diagrama de componentes
+Este diagrama representa los principales componentes de la arquitectura propuesta, sus responsabilidades y sus relaciones. El sistema se organiza mediante ASP.NET Core MVC, módulos funcionales, servicios transversales y persistencia de datos.
 
 ```mermaid
 flowchart TB
-    USER(["Dirigente de Comité / Personal de la Subgerencia"])
 
-    subgraph PRESENTACION["01 · CAPA DE PRESENTACIÓN"]
+    %% USUARIOS
+    U["Usuarios del sistema<br/>Dirigente de comité y personal municipal"]
+
+    %% PRESENTACION
+    subgraph PRESENTACION["1. CAPA DE PRESENTACIÓN"]
         direction LR
-        VISTAS["Vistas Razor<br/>Formularios y consultas"]
-        CBEN["Controlador de<br/>beneficiarios"]
-        CREP["Controlador de<br/>reportes"]
-        CUSR["Controlador de<br/>usuarios y acceso"]
+        V["Vistas Razor<br/>HTML / Bootstrap"]
+        C["Controladores MVC<br/>ASP.NET Core 10"]
+        V --> C
     end
 
-    subgraph NEGOCIO["02 · CAPA DE LÓGICA DE NEGOCIO"]
+    %% MODULOS FUNCIONALES
+    subgraph MODULOS["2. MÓDULOS FUNCIONALES"]
         direction TB
 
-        subgraph GESTION["Gestión de beneficiarios"]
+        subgraph FILA1["Gestión y control de beneficiarios"]
             direction LR
-            SBEN["Servicio de<br/>beneficiarios"]
-            SDUP["Validación de<br/>duplicados"]
-            SPAD["Gestión del<br/>padrón"]
-            SREV["Revalidación<br/>periódica"]
+            M1["01 · Registro y padrón<br/>Beneficiarios e inscripciones"]
+            M2["02 · Detección de duplicados<br/>Validación de registros"]
+            M3["03 · Revalidación periódica<br/>Control semestral"]
         end
 
-        subgraph PROCESOS["Procesos complementarios"]
+        subgraph FILA2["Operaciones y servicios al usuario"]
             direction LR
-            SSTA["Importación y<br/>staging"]
-            SNOT["Servicio de<br/>notificaciones"]
-            SREP["Servicio de<br/>reportes"]
-            SUSR["Gestión de<br/>usuarios y roles"]
+            M4["04 · Notificaciones<br/>Avisos y estado de envíos"]
+            M5["05 · Cobertura y reportes<br/>Consultas y exportaciones"]
+            M6["06 · Staging e importación<br/>Validación de archivos"]
         end
+
+        M7["07 · Autenticación y autorización<br/>Usuarios, roles y permisos"]
     end
 
-    subgraph PERSISTENCIA["03 · CAPA DE ACCESO A DATOS"]
+    %% SERVICIOS TRANSVERSALES
+    subgraph SERVICIOS["3. SERVICIOS TRANSVERSALES"]
         direction LR
-        REPOS["Repositorios"]
-        UOW["Unit of Work"]
-        CTX["Entity Framework Core<br/>DbContext"]
+        AUD["Auditoría<br/>Trazabilidad de operaciones"]
+        OFF["Sincronización offline<br/>Validación y sincronización"]
+        DAT["Acceso a datos<br/>Entity Framework Core 10"]
     end
 
-    DB[("SQL Server")]
-    XLS[("Archivos históricos<br/>Excel")]
-    MSG["Pasarela externa<br/>SMS / WhatsApp"]
+    %% SISTEMAS EXTERNOS
+    subgraph EXTERNOS["4. PERSISTENCIA E INTEGRACIONES"]
+        direction LR
+        DB[("Azure SQL Database")]
+        GW["Pasarela SMS / WhatsApp"]
+        EX["Archivos históricos<br/>Excel y padrones en papel"]
+    end
 
-    USER --> VISTAS
-    VISTAS --> CBEN
-    VISTAS --> CREP
-    VISTAS --> CUSR
+    %% FLUJO PRINCIPAL
+    U --> V
+    C --> M1
+    C --> M2
+    C --> M3
+    C --> M4
+    C --> M5
+    C --> M6
+    C --> M7
 
-    CBEN --> SBEN
-    CREP --> SREP
-    CUSR --> SUSR
+    %% RELACIONES FUNCIONALES
+    M1 --> M2
+    M1 --> M3
+    M1 --> M5
+    M6 --> M1
+    M6 --> M2
+    M3 --> M4
 
-    SBEN --> SDUP
-    SBEN --> SPAD
-    SPAD --> SREV
-    SSTA --> SBEN
-    SREP --> SPAD
-    SNOT --> SBEN
+    %% SERVICIOS COMPARTIDOS
+    M1 --> DAT
+    M2 --> DAT
+    M3 --> DAT
+    M4 --> DAT
+    M5 --> DAT
+    M6 --> DAT
+    M7 --> DAT
 
-    SBEN --> REPOS
-    SDUP --> REPOS
-    SPAD --> REPOS
-    SREV --> REPOS
-    SSTA --> REPOS
-    SREP --> REPOS
-    SUSR --> REPOS
+    M1 -.-> AUD
+    M2 -.-> AUD
+    M3 -.-> AUD
+    M6 -.-> AUD
 
-    REPOS --> UOW
-    UOW --> CTX
-    CTX --> DB
+    OFF <--> M1
+    OFF <--> M6
 
-    XLS -.-> SSTA
-    SNOT -.-> MSG
+    %% INTEGRACIONES EXTERNAS
+    DAT --> DB
+    M4 --> GW
+    EX --> M6
 
-    %% Estilos
-    classDef actor fill:#EAF2F8,stroke:#2874A6,color:#154360,stroke-width:1.5px
-    classDef presentation fill:#D6EAF8,stroke:#2874A6,color:#154360,stroke-width:1.5px
-    classDef business fill:#D5F5E3,stroke:#239B56,color:#145A32,stroke-width:1.5px
-    classDef data fill:#FCF3CF,stroke:#B7950B,color:#7D6608,stroke-width:1.5px
-    classDef external fill:#F4ECF7,stroke:#884EA0,color:#512E5F,stroke-width:1.5px
+    %% ESTILOS
+    classDef usuario fill:#F3F4F6,stroke:#6B7280,color:#111827,stroke-width:1.5px
+    classDef presentacion fill:#DBEAFE,stroke:#3B82F6,color:#1E3A8A,stroke-width:1.5px
+    classDef modulo fill:#D1FAE5,stroke:#10B981,color:#064E3B,stroke-width:1.5px
+    classDef transversal fill:#FEF3C7,stroke:#D97706,color:#78350F,stroke-width:1.5px
+    classDef externo fill:#EDE9FE,stroke:#8B5CF6,color:#4C1D95,stroke-width:1.5px
 
-    class USER actor
-    class VISTAS,CBEN,CREP,CUSR presentation
-    class SBEN,SDUP,SPAD,SREV,SSTA,SNOT,SREP,SUSR business
-    class REPOS,UOW,CTX,DB data
-    class XLS,MSG external
+    class U usuario
+    class V,C presentacion
+    class M1,M2,M3,M4,M5,M6,M7 modulo
+    class AUD,OFF,DAT transversal
+    class DB,GW,EX externo
 
-    style PRESENTACION fill:#F5FAFE,stroke:#2874A6,stroke-width:1.5px
-    style NEGOCIO fill:#F4FBF6,stroke:#239B56,stroke-width:1.5px
-    style PERSISTENCIA fill:#FFFCF2,stroke:#B7950B,stroke-width:1.5px
-
-    linkStyle default stroke:#566573,stroke-width:1.3px,color:#273746
+    %% ESTILO DE CONEXIONES
+    linkStyle default stroke:#64748B,stroke-width:1.3px
 ```
 
-## Descripción
+## Responsabilidad de los módulos
 
-La capa de presentación recibe las solicitudes de los usuarios. La capa de negocio agrupa las operaciones de beneficiarios, validación de duplicados, padrón, revalidación, importación, notificaciones, reportes y administración de usuarios. La capa de acceso a datos organiza la persistencia mediante repositorios, Unit of Work y Entity Framework Core.
+| N.º | Módulo | Responsabilidad |
+|---|---|---|
+| 01 | Registro y padrón | Gestionar beneficiarios e inscripciones. |
+| 02 | Detección de duplicados | Identificar posibles duplicados según las reglas del programa y comité. |
+| 03 | Revalidación periódica | Controlar el proceso de revalidación semestral. |
+| 04 | Notificaciones | Coordinar avisos y registrar el estado de los envíos. |
+| 05 | Cobertura y reportes | Consultar cobertura y generar reportes autorizados. |
+| 06 | Staging e importación | Recibir y validar archivos antes de incorporar los datos. |
+| 07 | Autenticación y autorización | Gestionar el acceso mediante usuarios, roles y permisos. |
 
-La separación facilita el mantenimiento y permite identificar las responsabilidades de cada parte del sistema.
-
-**Nota:** los componentes son una organización conceptual basada en los requisitos y la arquitectura documentada. Se deben contrastar con el código fuente para confirmar sus nombres y relaciones reales.
+**Nota arquitectónica:** el diagrama representa el diseño propuesto. Las integraciones, la sincronización offline y los servicios deberán implementarse y validarse durante el desarrollo.
