@@ -1,128 +1,89 @@
 
-# C4 — Nivel 3: Diagrama de Componentes
-
-## Sistema de Gestión de Programas Sociales de Huamanga
-
-Este diagrama representa los principales componentes de la arquitectura propuesta, sus responsabilidades y sus relaciones. El sistema se organiza mediante ASP.NET Core MVC, módulos funcionales, servicios transversales y persistencia de datos.
+## C4 - Nivel 3: Diagrama de Componentes
 
 ```mermaid
 flowchart TB
+    usuario["Dirigente de comité / Personal municipal"]
 
-    %% USUARIOS
-    U["Usuarios del sistema<br/>Dirigente de comité y personal municipal"]
-
-    %% PRESENTACION
-    subgraph PRESENTACION["1. CAPA DE PRESENTACIÓN"]
-        direction LR
-        V["Vistas Razor<br/>HTML / Bootstrap"]
-        C["Controladores MVC<br/>ASP.NET Core 10"]
-        V --> C
-    end
-
-    %% MODULOS FUNCIONALES
-    subgraph MODULOS["2. MÓDULOS FUNCIONALES"]
+    subgraph aplicacion["APLICACIÓN ASP.NET CORE MVC"]
         direction TB
 
-        subgraph FILA1["Gestión y control de beneficiarios"]
+        subgraph presentacion["CAPA DE PRESENTACIÓN"]
             direction LR
-            M1["01 · Registro y padrón<br/>Beneficiarios e inscripciones"]
-            M2["02 · Detección de duplicados<br/>Validación de registros"]
-            M3["03 · Revalidación periódica<br/>Control semestral"]
+            vistas["Vistas Razor"]
+            controladores["Controladores MVC"]
+            vistas --> controladores
         end
 
-        subgraph FILA2["Operaciones y servicios al usuario"]
-            direction LR
-            M4["04 · Notificaciones<br/>Avisos y estado de envíos"]
-            M5["05 · Cobertura y reportes<br/>Consultas y exportaciones"]
-            M6["06 · Staging e importación<br/>Validación de archivos"]
+        subgraph funcional["MÓDULOS FUNCIONALES"]
+            direction TB
+
+            subgraph fila1[" "]
+                direction LR
+                m1["01. Autenticación<br/>y autorización"]
+                m2["02. Registro<br/>y padrón"]
+                m3["03. Detección<br/>de duplicados"]
+                m4["04. Revalidación<br/>periódica"]
+            end
+
+            subgraph fila2[" "]
+                direction LR
+                m5["05. Notificaciones"]
+                m6["06. Cobertura<br/>y reportes"]
+                m7["07. Importación<br/>y depuración"]
+            end
         end
 
-        M7["07 · Autenticación y autorización<br/>Usuarios, roles y permisos"]
+        subgraph soporte["SERVICIOS COMPARTIDOS"]
+            direction LR
+            auditoria["Servicio de auditoría"]
+            datos["Acceso a datos<br/>Entity Framework Core"]
+        end
+
+        controladores --> m1
+        controladores --> m2
+        controladores --> m3
+        controladores --> m4
+        controladores --> m5
+        controladores --> m6
+        controladores --> m7
+
+        m1 --> datos
+        m2 --> datos
+        m3 --> datos
+        m4 --> datos
+        m5 --> datos
+        m6 --> datos
+        m7 --> datos
+
+        m2 -.-> auditoria
+        m4 -.-> auditoria
+        m7 -.-> auditoria
     end
 
-    %% SERVICIOS TRANSVERSALES
-    subgraph SERVICIOS["3. SERVICIOS TRANSVERSALES"]
-        direction LR
-        AUD["Auditoría<br/>Trazabilidad de operaciones"]
-        OFF["Sincronización offline<br/>Validación y sincronización"]
-        DAT["Acceso a datos<br/>Entity Framework Core 10"]
-    end
+    bd[("Azure SQL Database")]
+    proveedor["Proveedor SMS / WhatsApp"]
 
-    %% SISTEMAS EXTERNOS
-    subgraph EXTERNOS["4. PERSISTENCIA E INTEGRACIONES"]
-        direction LR
-        DB[("Azure SQL Database")]
-        GW["Pasarela SMS / WhatsApp"]
-        EX["Archivos históricos<br/>Excel y padrones en papel"]
-    end
+    usuario --> vistas
+    datos --> bd
+    m5 --> proveedor
 
-    %% FLUJO PRINCIPAL
-    U --> V
-    C --> M1
-    C --> M2
-    C --> M3
-    C --> M4
-    C --> M5
-    C --> M6
-    C --> M7
+    classDef actor fill:#D6EAF8,stroke:#2874A6,color:#154360,stroke-width:1.5px
+    classDef presentacion fill:#D6EAF8,stroke:#2874A6,color:#154360,stroke-width:1.5px
+    classDef modulo fill:#D5F5E3,stroke:#239B56,color:#145A32,stroke-width:1.5px
+    classDef soporte fill:#FCF3CF,stroke:#B7950B,color:#7D6608,stroke-width:1.5px
+    classDef externo fill:#E8DAEF,stroke:#7D3C98,color:#512E5F,stroke-width:1.5px
 
-    %% RELACIONES FUNCIONALES
-    M1 --> M2
-    M1 --> M3
-    M1 --> M5
-    M6 --> M1
-    M6 --> M2
-    M3 --> M4
+    class usuario actor
+    class vistas,controladores presentacion
+    class m1,m2,m3,m4,m5,m6,m7 modulo
+    class auditoria,datos soporte
+    class bd,proveedor externo
 
-    %% SERVICIOS COMPARTIDOS
-    M1 --> DAT
-    M2 --> DAT
-    M3 --> DAT
-    M4 --> DAT
-    M5 --> DAT
-    M6 --> DAT
-    M7 --> DAT
-
-    M1 -.-> AUD
-    M2 -.-> AUD
-    M3 -.-> AUD
-    M6 -.-> AUD
-
-    OFF <--> M1
-    OFF <--> M6
-
-    %% INTEGRACIONES EXTERNAS
-    DAT --> DB
-    M4 --> GW
-    EX --> M6
-
-    %% ESTILOS
-    classDef usuario fill:#F3F4F6,stroke:#6B7280,color:#111827,stroke-width:1.5px
-    classDef presentacion fill:#DBEAFE,stroke:#3B82F6,color:#1E3A8A,stroke-width:1.5px
-    classDef modulo fill:#D1FAE5,stroke:#10B981,color:#064E3B,stroke-width:1.5px
-    classDef transversal fill:#FEF3C7,stroke:#D97706,color:#78350F,stroke-width:1.5px
-    classDef externo fill:#EDE9FE,stroke:#8B5CF6,color:#4C1D95,stroke-width:1.5px
-
-    class U usuario
-    class V,C presentacion
-    class M1,M2,M3,M4,M5,M6,M7 modulo
-    class AUD,OFF,DAT transversal
-    class DB,GW,EX externo
-
-    %% ESTILO DE CONEXIONES
-    linkStyle default stroke:#64748B,stroke-width:1.3px
+    style aplicacion fill:#FFFFFF,stroke:#566573,stroke-width:2px
+    style presentacion fill:#EBF5FB,stroke:#5DADE2,stroke-width:1px
+    style funcional fill:#EAFAF1,stroke:#58D68D,stroke-width:1px
+    style soporte fill:#FEF9E7,stroke:#D4AC0D,stroke-width:1px
+    style fila1 fill:transparent,stroke:transparent
+    style fila2 fill:transparent,stroke:transparent
 ```
-
-## Responsabilidad de los módulos
-
-| N.º | Módulo | Responsabilidad |
-|---|---|---|
-| 01 | Registro y padrón | Gestionar beneficiarios e inscripciones. |
-| 02 | Detección de duplicados | Identificar posibles duplicados según las reglas del programa y comité. |
-| 03 | Revalidación periódica | Controlar el proceso de revalidación semestral. |
-| 04 | Notificaciones | Coordinar avisos y registrar el estado de los envíos. |
-| 05 | Cobertura y reportes | Consultar cobertura y generar reportes autorizados. |
-| 06 | Staging e importación | Recibir y validar archivos antes de incorporar los datos. |
-| 07 | Autenticación y autorización | Gestionar el acceso mediante usuarios, roles y permisos. |
-
-**Nota arquitectónica:** el diagrama representa el diseño propuesto. Las integraciones, la sincronización offline y los servicios deberán implementarse y validarse durante el desarrollo.
