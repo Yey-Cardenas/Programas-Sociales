@@ -3,39 +3,40 @@
 ## Diagrama de arquitectura
 
 ```mermaid
+
 flowchart TD
     subgraph ACTORES["ACTORES"]
         Dirigente["Dirigente de Comité"]
-        SubGerencia["Personal de la Sub Gerencia"]
+        SubGerencia["Personal autorizado de la Sub Gerencia"]
         Beneficiario["Beneficiario"]
     end
 
-    subgraph PRESENTACION["CAPA MVC - WEB"]
-        Vistas["Vistas Razor (.cshtml)<br/>+ PWA Offline-first"]
-        Controladores["Controladores<br/>ASP.NET Core MVC 9"]
+    subgraph PRESENTACION["PRESENTACIÓN - ASP.NET CORE 10 MVC"]
+        Vistas["Vistas Razor (.cshtml)<br/>HTML5, CSS3 y Bootstrap<br/>Capacidades PWA"]
+        Controladores["Controladores MVC"]
     end
 
-    subgraph NEGOCIO["LÓGICA Y DATOS (INFRASTRUCTURA)"]
-        Servicios["Servicios de Negocio<br/>(Validación, Staging, Notificaciones)"]
-        UoW["Unit of Work & Repositories<br/>EF Core"]
+    subgraph NEGOCIO["LÓGICA DE NEGOCIO"]
+        Servicios["Servicios de aplicación en C#<br/>Validación, staging y notificaciones"]
     end
 
-    subgraph DATOS["BASE DE DATOS"]
-        BD[("SQL Server<br/>(AuditoriaDB)")]
+    subgraph DATOS["ACCESO A DATOS"]
+        Persistencia["Entity Framework Core 10<br/>Patrones adicionales por validar"]
+        BD[("Azure SQL Database")]
     end
-    
+
     subgraph EXTERNOS["SISTEMAS EXTERNOS"]
-        Gateway["Gateway SMS / WhatsApp"]
+        Gateway["Proveedor SMS / WhatsApp"]
     end
 
     Dirigente --> Vistas
     SubGerencia --> Vistas
     Vistas --> Controladores
     Controladores --> Servicios
-    Servicios --> UoW
-    UoW --> BD
-    Servicios -->|"integraciones"| Gateway
-    Gateway -.->|"notifica estado"| Beneficiario
+    Servicios --> Persistencia
+    Persistencia --> BD
+    Servicios -->|"Integración HTTPS cuando corresponda"| Gateway
+    Gateway -.->|"Envía notificaciones"| Beneficiario
 ```
 
 
@@ -79,13 +80,22 @@ Además, la capa de negocio se integra con sistemas externos: el servicio de **N
 ## Vista de contexto
 
 ```mermaid
+
 flowchart LR
-    Dirigente(["Dirigente de Comité"]) -->|"registra y actualiza (Vistas Razor)"| SGPS
-    Sub(["Personal de la Sub Gerencia"]) -->|"supervisa, revisa duplicados, reportes"| SGPS
-    SGPS["Sistema de Gestión de<br/>Programas Sociales<br/>(.NET 9 MVC)"]
-    SGPS -->|"consumo API REST"| GW["Gateway SMS / WhatsApp"]
-    GW -.->|"notifica estado"| Benef(["Beneficiario"])
-    Excel["Padrón actual de los comités<br/>Excel / papel"] -->|"carga inicial (staging)"| SGPS
+    Dirigente["Dirigente de Comité"]
+    Sub["Personal autorizado de la Sub Gerencia"]
+    SGPS["Sistema de Gestión de Programas Sociales<br/>ASP.NET Core 10 MVC<br/>Razor y EF Core 10"]
+    GW["Proveedor SMS / WhatsApp"]
+    Benef["Beneficiario"]
+    Excel["Padrones históricos<br/>Excel / papel"]
+    DB[("Azure SQL Database")]
+
+    Dirigente -->|"Registra y actualiza"| SGPS
+    Sub -->|"Supervisa, revisa duplicados y consulta reportes"| SGPS
+    Excel -->|"Carga y validación mediante staging"| SGPS
+    SGPS -->|"Persistencia"| DB
+    SGPS -->|"Solicita notificaciones cuando corresponda"| GW
+    GW -.->|"Envía notificaciones"| Benef
 ```
 
 Esta vista muestra el sistema como una caja negra: solo aparecen sus actores y los sistemas con los que se comunica. El diagrama de arquitectura, en cambio, muestra su estructura interna por capas y módulos.

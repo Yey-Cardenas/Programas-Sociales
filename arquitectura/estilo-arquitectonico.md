@@ -39,7 +39,48 @@ Esta organización representa una separación lógica de responsabilidades. No s
 
 Los módulos definitivos deberán ajustarse al alcance funcional y a la implementación del proyecto.
 
-## 5. Ventajas
+
+## 5. Diagrama del estilo arquitectónico
+
+La solución utiliza una arquitectura en capas organizada como monolito modular. La presentación, la lógica de negocio y el acceso a datos forman parte de la aplicación ASP.NET Core 10 MVC.
+
+```mermaid
+flowchart TB
+    U["Usuarios<br/>Dirigentes y personal municipal autorizado"]
+
+    subgraph APP["MONOLITO MODULAR - ASP.NET CORE 10 MVC"]
+        subgraph PRESENTACION["CAPA DE PRESENTACIÓN"]
+            V["Vistas Razor<br/>HTML5, CSS3 y Bootstrap"]
+            C["Controladores MVC"]
+        end
+
+        subgraph NEGOCIO["CAPA DE LÓGICA DE NEGOCIO"]
+            S["Servicios de aplicación y dominio<br/>Validaciones, duplicados,<br/>revalidación, staging y reportes"]
+            N["Servicio de notificaciones"]
+        end
+
+        subgraph DATOS["CAPA DE ACCESO A DATOS"]
+            D["Entity Framework Core 10"]
+        end
+    end
+
+    DB[("Microsoft SQL Server")]
+    EXT["Proveedor externo<br/>SMS / WhatsApp"]
+    PWA["Capacidades PWA<br/>Offline y sincronización pendientes de validar"]
+
+    U --> V
+    V --> C
+    C --> S
+    S --> D
+    D --> DB
+    S --> N
+    N -.->|"Cuando corresponda"| EXT
+    V -.-> PWA
+```
+
+**Descripción:** las vistas presentan la interfaz, los controladores coordinan las solicitudes, los servicios aplican las reglas del negocio y Entity Framework Core 10 permite acceder a Microsoft SQL Server. Las notificaciones se gestionan mediante un servicio de la aplicación y un proveedor externo. Las capacidades offline quedan sujetas a implementación y pruebas.
+
+## 6. Ventajas
 
 - Menor complejidad de despliegue que una solución distribuida en múltiples servicios.
 - Organización de las funcionalidades por responsabilidades.
@@ -47,7 +88,7 @@ Los módulos definitivos deberán ajustarse al alcance funcional y a la implemen
 - Adecuación para un proyecto que necesita evolucionar progresivamente.
 - Posibilidad de mantener una estructura clara sin introducir complejidad innecesaria.
 
-## 6. Consideraciones
+## 7. Consideraciones
 
 El monolito modular no implica que todas las funcionalidades estén terminadas. La PWA, la sincronización sin conexión y las integraciones externas deberán verificarse durante el desarrollo.
 

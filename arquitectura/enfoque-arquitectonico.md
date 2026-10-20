@@ -14,6 +14,33 @@ Se propone utilizar el patrón Modelo-Vista-Controlador (MVC), proporcionado por
 
 La organización modular permitirá separar las responsabilidades relacionadas con beneficiarios, programas sociales, comités, validaciones, reportes y auditoría.
 
+
+### Diagrama general del enfoque MVC
+
+```mermaid
+flowchart TD
+    U["Usuarios<br/>Dirigentes de comité y personal municipal autorizado"]
+
+    subgraph APP["APLICACIÓN ASP.NET CORE 10 MVC"]
+        V["Vistas Razor<br/>HTML5, CSS3 y Bootstrap"]
+        C["Controladores MVC"]
+        S["Servicios de negocio<br/>C# / .NET 10"]
+        D["Acceso a datos<br/>Entity Framework Core 10"]
+    end
+
+    DB[("Microsoft SQL Server")]
+    EXT["Proveedor externo<br/>SMS / WhatsApp"]
+    PWA["Capacidades PWA<br/>Soporte offline propuesto"]
+
+    U --> V
+    V --> C
+    C --> S
+    S --> D
+    D --> DB
+    S -.->|"Cuando corresponda"| EXT
+    V -.-> PWA
+```
+
 ## 3. Tecnologías
 
 | Elemento | Tecnología prevista |
