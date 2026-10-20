@@ -30,15 +30,16 @@ Arquitectura de Software (IS-488) – Semestre 2026-II
 
 ## Arquitectura y patrones
 
-## Arquitectura y patrones
+La solución se plantea como un **monolito modular** basado en el patrón **Modelo-Vista-Controlador (MVC)**. Esta organización permitirá agrupar las funcionalidades del sistema en módulos con responsabilidades diferenciadas y facilitar su mantenimiento.
 
-La solución se plantea como un **monolito modular** basado en el patrón **Modelo-Vista-Controlador (MVC)**.
+Se propone utilizar la **inyección de dependencias** de ASP.NET Core para reducir el acoplamiento entre los componentes. Asimismo, se tomarán como referencia los principios **SOLID** para organizar las responsabilidades, definir abstracciones cuando sean necesarias y facilitar la evolución de las funcionalidades. Su aplicación se documentará como parte del diseño y deberá verificarse cuando exista una implementación del sistema.
 
-La aplicación se organizará en módulos y capas con responsabilidades diferenciadas. Se utilizará inyección de dependencias y se evaluará el uso de Repository y Unit of Work cuando aporten una separación útil de responsabilidades.
+El uso de los patrones Repository y Unit of Work se evaluará según las necesidades reales de acceso a datos, evitando incorporar complejidad que no aporte un beneficio claro.
 
-Como parte de la propuesta de rendimiento, se evaluará el uso de `IMemoryCache` para almacenar temporalmente datos de referencia consultados con frecuencia que no sean sensibles. Esta estrategia deberá contemplar la expiración y la invalidación de las entradas cuando cambien los datos relacionados. Su efecto se comprobará mediante pruebas, sin asumir mejoras de rendimiento antes de medirlas.
+Como parte de la propuesta de rendimiento, se evaluará el uso de `IMemoryCache` para almacenar temporalmente datos de referencia consultados con frecuencia que no sean sensibles. La estrategia deberá contemplar la expiración y la invalidación de las entradas cuando cambien los datos relacionados. Su efecto se comprobará mediante pruebas, sin asumir mejoras de rendimiento antes de medirlas.
 
-El caché en memoria del servidor será independiente del almacenamiento local que pueda utilizar la PWA en el navegador. Ambas capacidades están sujetas a implementación y validación.
+El caché en memoria del servidor será independiente del almacenamiento local que pueda utilizar la aplicación web progresiva (PWA) en el navegador. Ambas capacidades están sujetas a implementación y validación.
+
 
 ## Stack tecnológico
 
@@ -79,6 +80,7 @@ La autorización deberá validarse en el servidor. Las operaciones realizadas si
 - [Restricciones](analisis-de-sistema/05-restricciones.md)
 - [Drivers arquitectónicos](analisis-de-sistema/06-drivers-arquitectonicos.md)
 - [Requisitos no funcionales](analisis-de-sistema/07-requisitos-no-funcionales.md)
+- [Plan de medición de atributos de calidad](analisis-de-sistema/08-medicion-de-calidad.md)
 
 ### Arquitectura
 
@@ -91,6 +93,7 @@ La autorización deberá validarse en el servidor. Las operaciones realizadas si
 - [Documentación del modelo C4](arquitectura/C4/README.md)
 - [Enfoque arquitectónico](arquitectura/enfoque-arquitectonico.md)
 - [Estilo arquitectónico](arquitectura/estilo-arquitectonico.md)
+- [Principios SOLID](arquitectura/principios-solid.md)
 
 ## Estado del proyecto
 

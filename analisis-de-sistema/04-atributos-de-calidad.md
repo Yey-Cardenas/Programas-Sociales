@@ -200,7 +200,19 @@ Los atributos de calidad deberán evaluarse durante el desarrollo y las pruebas.
 
 Los valores establecidos son objetivos de diseño y no representan resultados de pruebas ya realizadas.
 
-## 6. Referencias relacionadas
+## 6. Plan de medición y verificación
+
+Los atributos de calidad definidos en este documento representan objetivos y criterios de diseño que deberán comprobarse mediante evaluaciones apropiadas.
+
+Para mantener la trazabilidad entre los requisitos y los resultados, se utilizará el documento [Plan de medición de atributos de calidad](08-medicion-de-calidad.md), que describe las métricas propuestas, los procedimientos de evaluación, los criterios de aceptación y las evidencias que deberán registrarse.
+
+La evaluación de mantenibilidad, correspondiente al atributo AC-08, también considerará los principios SOLID descritos en [Aplicación de los principios SOLID](../arquitectura/principios-solid.md).
+
+Los criterios que todavía no tengan un umbral definido deberán acordarse antes de ejecutar las pruebas. Los objetivos de rendimiento, disponibilidad y demás atributos no se considerarán cumplidos hasta contar con resultados verificables.
+
+Mientras no exista una implementación funcional, los resultados permanecerán pendientes de evaluación.
+
+## 7. Referencias relacionadas
 
 - [Historias de usuario](./02-historias-de-usuario.md)
 - [Requisitos funcionales](./03-requisitos-funcionales.md)
