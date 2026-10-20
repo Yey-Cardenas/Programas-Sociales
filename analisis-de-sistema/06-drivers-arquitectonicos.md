@@ -1,23 +1,31 @@
-# Drivers arquitectónicos
+# 06. Drivers arquitectónicos
 
-## Drivers identificados
+## 1. Drivers identificados
 
-| ID | Driver arquitectónico | Origen | ¿Por qué influye en la arquitectura? |
-|----|-----------------------|--------|--------------------------------------|
-| DA01 | El sistema debe permitir registrar beneficiarios sin conexión y sincronizar después. | AC01 – Disponibilidad; RC02 – PWA | Define el uso de Service Worker, almacenamiento local en el cliente y una estrategia de sincronización asíncrona. |
-| DA02 | La validación de duplicados por DNI debe responder en menos de 0.5 segundos. | AC02 – Rendimiento; RF-02 | Condiciona el modelo de datos (clave única por DNI), la base de datos relacional y dónde se ejecuta la validación. |
-| DA03 | El sistema debe proteger los datos personales y las copias de seguridad. | AC04 – Seguridad; AC09 – Respaldo | Influye en la autenticación (JWT), la autorización por rol, el cifrado y el aislamiento del servidor de base de datos. |
-| DA04 | Debe poder incorporar nuevos programas sociales sin rediseñar el sistema. | AC08 – Mantenibilidad | Exige módulos cohesionados y de bajo acoplamiento, con límites claros dentro del monolito. |
-| DA05 | La solución debe ser de bajo costo y baja complejidad operativa. | RC01 – Monolito Modular; AC07 – Escalabilidad | Determina un solo proceso de backend y dos servidores en lugar de servicios distribuidos. |
-| DA06 | El sistema debe notificar mediante un gateway SMS/WhatsApp externo. | RC06 – Gateway; RF-07 | Condiciona la integración con un servicio externo; conviene un módulo de notificaciones con cola que aísle sus fallos. |
-| DA07 | Los padrones históricos en Excel/papel deben depurarse antes de consolidarse. | RF-11 – Staging | Obliga a un módulo de staging separado de las tablas de producción. |
-| DA08 | La cobertura debe visualizarse geográficamente por zona. | RF-08, RF-09; RC05 – PostGIS | Condiciona la elección de PostgreSQL con PostGIS y el modelado de zonas. |
+| ID | Driver arquitectónico | Origen | Influencia en la arquitectura |
+|---|---|---|---|
+| DA01 | El sistema debe permitir registrar información en zonas con conectividad limitada y sincronizarla cuando se recupere la conexión. | AC01; restricción operativa | Condiciona el diseño de la PWA, el almacenamiento local temporal y el proceso de sincronización. |
+| DA02 | La validación de duplicados por DNI debe responder en menos de 0.5 segundos bajo una carga definida. | AC02; RF-02 | Influye en los índices de la base de datos, las consultas y las validaciones del servidor. |
+| DA03 | El sistema debe proteger los datos personales y registrar las operaciones relevantes. | AC04; AC06; AC09 | Influye en la autenticación, la autorización por roles, la auditoría, las copias de seguridad y la protección de las comunicaciones. |
+| DA04 | Deben incorporarse nuevos programas sociales sin rediseñar todo el sistema. | AC08 | Favorece módulos cohesionados, responsabilidades delimitadas y bajo acoplamiento. |
+| DA05 | La solución debe mantener una complejidad operativa y un costo adecuados al proyecto. | Restricciones tecnológicas y operativas; AC07 | Justifica evaluar un monolito modular antes de considerar servicios distribuidos. La infraestructura concreta se definirá posteriormente. |
+| DA06 | El sistema debe permitir integrar servicios externos de mensajería. | RF-07; restricción de mensajería | Favorece un módulo de notificaciones que aísle los errores del proveedor externo y permita registrar los resultados de envío. |
+| DA07 | Los padrones históricos deben validarse antes de incorporarse a los registros centrales. | RF-11 | Requiere un proceso de importación, validación, detección de errores y confirmación de los datos. |
+| DA08 | La información debe permitir consultar y visualizar la cobertura por zonas geográficas. | RF-08; RF-09 | Requiere modelar las zonas y sus relaciones con los registros. La solución geográfica debe ser compatible con Microsoft SQL Server, sin introducir PostgreSQL como motor de base de datos. |
 
-## Evaluación de otros elementos
+## 2. Evaluación de otros elementos
 
-| Elemento | ¿Puede ser driver? | Justificación |
-|----------|--------------------|---------------|
-| RNF-03 (Usabilidad: máximo 5 campos) | No | Afecta el diseño de la interfaz y no la estructura del sistema ni la organización de sus módulos. |
-| RNF-06 (Auditabilidad) | Sí | Exige registrar usuario, fecha y motivo de cada cambio. Eso afecta el modelo de datos y atraviesa todos los módulos que modifican el padrón. |
-| RF-10 (Exportar padrón en Excel/PDF) | No | Es una funcionalidad que se resuelve dentro del módulo de Cobertura y Reportes, sin decisiones estructurales importantes. |
-| RC10 (Git y GitHub) | No | Es una restricción del proceso de desarrollo; no limita la estructura ni el funcionamiento del sistema. |
+| Elemento | ¿Es un driver arquitectónico? | Justificación |
+|---|---|---|
+| AC03 — Usabilidad | No necesariamente | Influye principalmente en el diseño y la interacción de la interfaz, aunque puede condicionar decisiones técnicas concretas. |
+| AC06 — Auditabilidad | Sí | Requiere registrar quién realizó una operación, cuándo ocurrió y qué cambio se efectuó. |
+| RF-10 — Exportación a Excel/PDF | No necesariamente | Puede resolverse como una funcionalidad del módulo de reportes, salvo que existan requisitos especiales de volumen o seguridad. |
+| Control de versiones con Git y GitHub | No | Es una restricción del proceso de desarrollo y no una decisión estructural del sistema. |
+
+## 3. Criterios de validación
+
+- Los drivers deben mantener trazabilidad con los requisitos y las restricciones existentes.
+- Las decisiones tecnológicas deben ser coherentes con C#, ASP.NET Core 9 MVC, Entity Framework Core 9 y Microsoft SQL Server.
+- La PWA, la sincronización, la mensajería y las integraciones externas se consideran propuestas hasta que se implementen y prueben.
+- No se debe afirmar que el sistema está desplegado o que cumple métricas de rendimiento sin evidencia de pruebas.
+- La infraestructura de despliegue se definirá en una etapa posterior.

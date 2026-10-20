@@ -15,11 +15,12 @@
 
 ## 2. Diagramas de arquitectura
 
-1. [Nivel 1 — Contexto del sistema](C4-Nivel-1-Contexto.md)
-2. [Nivel 2 — Contenedores](C4-Nivel-2-Contenedores.md)
-3. [Nivel 3 — Componentes](C4-Nivel-3-Componentes.md)
-4. [Nivel 4 — Código (vista complementaria)](C4-Nivel-4-Codigo.md)
-5. [Vista de despliegue físico propuesta](C4-Despliegue-Fisico.md)
+## 2. Diagramas de arquitectura
+
+1. [Nivel 1 — Contexto del sistema](C1-contexto.md)
+2. [Nivel 2 — Contenedores](C2-contenedores.md)
+3. [Nivel 3 — Componentes](C3-componentes.md)
+4. [Nivel 4 — Código (vista complementaria)](C4-codigo.md)
 
 ## 3. Descripción de los niveles
 

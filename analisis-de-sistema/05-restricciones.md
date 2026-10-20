@@ -1,49 +1,52 @@
-# 05. Restricciones del Sistema
+# 05. Restricciones del sistema
 
 ## 1. Restricciones tecnológicas
 
-El desarrollo del Sistema de Gestión de Programas Sociales de Huamanga se plantea con las siguientes tecnologías:
-
-- **Lenguaje de programación:** C#.
-- **Framework web:** ASP.NET Core 9 con el patrón MVC.
-- **Interfaz de usuario:** vistas Razor (`.cshtml`), HTML5, CSS3 y Bootstrap.
-- **Gestión de datos:** Entity Framework Core 9.
-- **Base de datos:** Microsoft SQL Server.
-- **Organización arquitectónica:** monolito modular.
+| ID | Restricción |
+|---|---|
+| RC01 | El sistema se diseñará como un monolito modular. |
+| RC02 | El backend utilizará C# con ASP.NET Core 9 y el patrón MVC. |
+| RC03 | La interfaz utilizará vistas Razor (.cshtml), HTML5, CSS3 y Bootstrap. |
+| RC04 | El acceso a datos utilizará Entity Framework Core 9. |
+| RC05 | El motor de base de datos previsto será Microsoft SQL Server. |
 
 Las tecnologías indicadas deben mantenerse uniformes en los documentos de análisis y arquitectura, salvo que exista una decisión formal de cambio.
 
 ## 2. Restricciones de arquitectura
 
-- El sistema se organizará como un monolito modular, separando las responsabilidades funcionales en módulos.
-- Se utilizará MVC para organizar los controladores, las vistas y el acceso a los datos.
-- Se contempla el uso de Repository y Unit of Work para organizar las operaciones de persistencia, según las necesidades del proyecto.
-- La inyección de dependencias permitirá gestionar los servicios y sus dependencias.
-- La solución no se documentará como una arquitectura basada en React, Node.js o PostgreSQL, porque estas tecnologías no corresponden al stack definido en el README principal.
+- La aplicación se organizará en módulos con responsabilidades delimitadas.
+- MVC organizará los controladores, las vistas y la interacción con los servicios.
+- Repository y Unit of Work se evaluarán según las necesidades de persistencia y no se presentarán como implementados sin verificar el código.
+- La inyección de dependencias se utilizará para administrar las dependencias de la aplicación.
+- No se introducirá React, Node.js ni PostgreSQL como parte del stack definido sin una decisión formal de arquitectura.
 
 ## 3. Restricciones de datos
 
-- Microsoft SQL Server será el gestor de base de datos previsto.
-- Entity Framework Core 9 será el ORM utilizado para el acceso a los datos.
-- La información de los beneficiarios deberá protegerse frente al acceso no autorizado.
-- Las operaciones importantes deberán contemplar mecanismos de validación y auditoría.
-- El esquema definitivo de la base de datos deberá validarse durante el diseño e implementación.
+- RC06: La información se almacenará en Microsoft SQL Server.
+- RC07: El acceso a datos se realizará mediante Entity Framework Core 9.
+- Los registros de beneficiarios deberán protegerse frente al acceso no autorizado.
+- Las operaciones relevantes deberán incluir validaciones y mecanismos de auditoría.
+- El modelo de datos definitivo deberá validarse durante el diseño y la implementación.
 
 ## 4. Restricciones operativas
 
-- El sistema deberá considerar las condiciones de conectividad limitada de algunas zonas de Huamanga.
-- Se contempla una PWA con capacidades de funcionamiento sin conexión y sincronización posterior, cuya implementación deberá validarse.
-- La importación de información desde Excel deberá contemplar validaciones antes de incorporar los registros al sistema.
-- Las funcionalidades de mensajería por SMS o WhatsApp dependerán de la disponibilidad y configuración de servicios externos.
+- RC08: El diseño deberá considerar zonas con conectividad limitada.
+- La PWA y la sincronización posterior se consideran objetivos de diseño sujetos a implementación y pruebas.
+- La importación desde Excel deberá validar los datos antes de incorporarlos a los registros centrales.
+- La mensajería por SMS o WhatsApp dependerá de un proveedor externo, su disponibilidad y su configuración.
+- Las decisiones de alojamiento, cantidad de servidores y configuración de red quedan pendientes de definición.
 
 ## 5. Restricciones de seguridad
 
-- El acceso a las funcionalidades deberá controlarse de acuerdo con los roles definidos.
-- Los datos personales de los beneficiarios deberán manejarse con medidas de seguridad apropiadas.
-- Las entradas del usuario deberán validarse antes de procesarse.
+- El acceso a las funcionalidades deberá controlarse según los roles autorizados.
+- Los datos personales deberán manejarse con medidas de seguridad adecuadas.
+- Las entradas recibidas deberán validarse antes de procesarse.
 - Las credenciales y cadenas de conexión no deberán publicarse en el repositorio.
-- La auditoría deberá permitir registrar las operaciones relevantes, según las reglas que se definan para el sistema.
+- La auditoría deberá registrar las operaciones relevantes, incluyendo usuario, fecha, acción y resultado cuando corresponda.
+- Las copias de seguridad deberán protegerse frente al acceso no autorizado.
 
-## 6. Consideraciones de alcance
+## 6. Alcance y estado
 
-Este documento describe las restricciones tecnológicas y operativas previstas para el proyecto académico. Las funcionalidades que todavía no se hayan desarrollado, como el trabajo sin conexión, la sincronización o la integración con servicios de mensajería, se consideran objetivos de diseño y no funcionalidades implementadas.
+Este documento describe las restricciones previstas para el proyecto académico. No implica que todas las funcionalidades hayan sido implementadas.
+
+El funcionamiento sin conexión, la sincronización, las integraciones de mensajería y cualquier integración externa deberán verificarse mediante pruebas antes de considerarse funcionalidades operativas.

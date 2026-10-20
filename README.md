@@ -76,13 +76,13 @@ La autorización deberá validarse en el servidor. Las operaciones realizadas si
 
 ### Arquitectura
 
-- [Documentación general de C4](arquitectura/C4/README.md)
-- [Nivel 1: Contexto](arquitectura/C4/C4-Nivel-1-Contexto.md)
-- [Nivel 2: Contenedores](arquitectura/C4/C4-Nivel-2-Contenedores.md)
-- [Nivel 3: Componentes](arquitectura/C4/C4-Nivel-3-Componentes.md)
-- [Nivel 4: Código](arquitectura/C4/C4-Nivel-4-Codigo.md)
-- [Despliegue físico](arquitectura/C4/C4-Despliegue-Fisico.md)
-- [Arquitectura inicial](arquitectura/arquitectura-inicial.md)
+## Modelo C4
+
+- [Nivel 1: Contexto](arquitectura/C4/C1-contexto.md)
+- [Nivel 2: Contenedores](arquitectura/C4/C2-contenedores.md)
+- [Nivel 3: Componentes](arquitectura/C4/C3-componentes.md)
+- [Nivel 4: Código](arquitectura/C4/C4-codigo.md)
+- [Documentación del modelo C4](arquitectura/C4/README.md)
 - [Enfoque arquitectónico](arquitectura/enfoque-arquitectonico.md)
 - [Estilo arquitectónico](arquitectura/estilo-arquitectonico.md)
 
