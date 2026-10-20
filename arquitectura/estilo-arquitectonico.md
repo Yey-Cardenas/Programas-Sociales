@@ -96,72 +96,100 @@ La estrategia está propuesta a nivel arquitectónico y deberá implementarse y 
 
 ## 6. Diagrama del estilo arquitectónico
 
-
 ```mermaid
 flowchart TB
     USR["Personal municipal autorizado"]
     WEB["Navegador web"]
 
     subgraph APP["Monolito modular · ASP.NET Core MVC 9"]
-        MVC["Capa de presentación<br/>Controladores y vistas Razor"]
-
-        subgraph MOD["Módulos funcionales"]
-            M1["Gestión de beneficiarios"]
-            M2["Detección de duplicados"]
-            M3["Revalidación periódica"]
-            M4["Notificaciones"]
-            M5["Reportes e importación"]
+        subgraph PRESENTACION["Capa de presentación"]
+            CTRL["Controladores MVC"]
+            VIEW["Vistas Razor (.cshtml)"]
         end
 
-        subgraph SHARED["Servicios compartidos"]
+        subgraph MODULOS["Módulos funcionales"]
+            subgraph GESTION["Gestión de beneficiarios"]
+                M1["Registro y actualización"]
+                M2["Consulta del padrón"]
+                M3["Estado del beneficiario"]
+            end
+
+            subgraph VALIDACION["Validación de información"]
+                M4["Detección de DNI duplicado"]
+                M5["Revalidación periódica"]
+                M6["Importación de datos históricos"]
+            end
+
+            subgraph CONSULTAS["Consultas y comunicación"]
+                M7["Reportes y cobertura"]
+                M8["Gestión de notificaciones"]
+            end
+        end
+
+        subgraph COMPARTIDOS["Servicios compartidos"]
             SVC["Servicios de aplicación"]
-            CACHE[("Caché en memoria<br/>IMemoryCache")]
+            AUTH["Autenticación y autorización"]
             AUD["Auditoría"]
+            CACHE[("Caché en memoria<br/>IMemoryCache")]
         end
 
         DATA["Acceso a datos<br/>Entity Framework Core 9"]
     end
 
     DB[("Microsoft SQL Server")]
-    EXT["Servicios externos de mensajería"]
-    LOCAL[("Almacenamiento local PWA")]
+    HIST["Archivos históricos"]
+    EXT["Servicio externo de SMS / WhatsApp"]
+    LOCAL[("Almacenamiento local PWA<br/>en el navegador")]
 
     USR --> WEB
-    WEB --> MVC
+    WEB --> VIEW
+    VIEW --> CTRL
 
-    MVC --> M1
-    MVC --> M2
-    MVC --> M3
-    MVC --> M4
-    MVC --> M5
+    CTRL --> M1
+    CTRL --> M2
+    CTRL --> M3
+    CTRL --> M4
+    CTRL --> M5
+    CTRL --> M6
+    CTRL --> M7
+    CTRL --> M8
+    CTRL -.-> AUTH
 
     M1 --> SVC
     M2 --> SVC
     M3 --> SVC
     M4 --> SVC
     M5 --> SVC
+    M6 --> SVC
+    M7 --> SVC
+    M8 --> SVC
 
-    SVC <--> CACHE
     SVC --> AUD
-    SVC --> DATA
+    SVC -->|"Consulta de datos elegibles"| CACHE
+    CACHE -.->|"Resultado almacenado válido"| SVC
+    SVC -->|"Consulta o escritura"| DATA
     DATA --> DB
+    DB --> DATA
 
-    M4 -. "Solicitudes de envío" .-> EXT
+    M6 -.->|"Lectura y validación"| HIST
+    M8 -.->|"Solicitud de envío"| EXT
     WEB <--> LOCAL
 
     classDef actor fill:#E8EAF6,stroke:#3949AB,color:#1A237E
     classDef presentacion fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
     classDef modulo fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef servicio fill:#E0F2F1,stroke:#00897B,color:#004D40
     classDef cache fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
-    classDef infraestructura fill:#FFF3E0,stroke:#F57C00,color:#E65100
+    classDef datos fill:#FFF3E0,stroke:#F57C00,color:#E65100
     classDef externo fill:#FCE4EC,stroke:#C2185B,color:#880E4F
 
     class USR actor
-    class WEB,MVC presentacion
-    class M1,M2,M3,M4,M5,SVC,AUD modulo
+    class WEB,CTRL,VIEW presentacion
+    class M1,M2,M3,M4,M5,M6,M7,M8 modulo
+    class SVC,AUTH,AUD servicio
     class CACHE cache
-    class DATA,DB,LOCAL infraestructura
-    class EXT externo
+    class DATA,DB,LOCAL datos
+    class HIST,EXT externo
 ```
 
 ## 7. Consideraciones de conectividad

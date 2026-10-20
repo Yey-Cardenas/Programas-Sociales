@@ -30,11 +30,26 @@ Los valores indicados son objetivos propuestos. Su cumplimiento deberá comproba
 
 **Métrica propuesta:** Tiempo de respuesta inferior a 0,5 segundos para la validación de duplicados, bajo condiciones de prueba definidas.
 
-**Decisión arquitectónica relacionada:** Optimizar las consultas realizadas mediante Entity Framework Core 9 y Microsoft SQL Server. Evaluar índices y restricciones de integridad según las reglas del negocio.
+**Decisión arquitectónica relacionada:** Optimizar las consultas realizadas mediante Entity Framework Core 9 y Microsoft SQL Server. Evaluar índices y restricciones de integridad según las reglas del negocio. También se podrá evaluar el uso de `IMemoryCache` para datos de referencia consultados frecuentemente y que no sean sensibles. La detección de DNI duplicado deberá verificar información actualizada y no depender exclusivamente del caché.
 
 **Prioridad:** Alta.
 
-**Validación:** Ejecutar pruebas de rendimiento con datos representativos, incluyendo un padrón de referencia de hasta 15 000 beneficiarios. Documentar el entorno, la concurrencia y los tiempos obtenidos.
+**Validación:** Ejecutar pruebas de rendimiento con datos representativos, incluyendo un padrón de referencia de hasta 15 000 beneficiarios. Documentar el entorno, la concurrencia y los tiempos obtenidos. Si se implementa el caché, comparar las consultas con y sin caché para los datos elegibles, sin comprometer la actualización ni la integridad de la información. Registrar los resultados reales antes de concluir si existe una mejora.
+
+**Objetivo:** reducir el tiempo de respuesta de las consultas frecuentes y evitar accesos repetidos e innecesarios a la base de datos.
+
+**Estrategia arquitectónica:** se propone utilizar `IMemoryCache` de ASP.NET Core para conservar temporalmente resultados de consultas frecuentes, como catálogos de programas sociales y otros datos no sensibles.
+
+**Funcionamiento esperado:**
+1. El servicio comprueba si la información solicitada está disponible en el caché.
+2. Si existe una entrada válida, devuelve el resultado almacenado.
+3. Si no existe, consulta los datos mediante Entity Framework Core 9 y Microsoft SQL Server.
+4. El resultado puede almacenarse temporalmente para solicitudes posteriores.
+5. Cuando se modifiquen datos relacionados, se deberán invalidar o actualizar las entradas afectadas.
+
+**Verificación:** una vez implementada la estrategia, se realizarán pruebas comparativas de consultas con caché y sin caché. Se observarán los tiempos de respuesta y la cantidad de consultas realizadas a la base de datos.
+
+**Consideraciones:** se definirán tiempos de expiración y se evitará almacenar indiscriminadamente datos personales sensibles. La mejora del rendimiento es una expectativa que deberá comprobarse mediante pruebas.
 
 ### AC-03. Facilidad de uso
 

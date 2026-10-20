@@ -34,7 +34,7 @@ Los valores cuantitativos indicados representan objetivos propuestos para orient
 
 **Trazabilidad:** AC-02, AC-07, DA-02 y HU-02.
 
-**Verificación:** Realizar pruebas de rendimiento con datos representativos y documentar el entorno, el volumen de datos, la concurrencia y los tiempos obtenidos.
+**Verificación:** Realizar pruebas de rendimiento con datos representativos y documentar el entorno, el volumen de datos, la concurrencia y los tiempos obtenidos. Si se implementa `IMemoryCache`, comparar los tiempos de consulta con y sin caché para los datos elegibles. Comprobar que la detección de duplicados utilice información actualizada y registrar los resultados antes de afirmar que existe una mejora.
 
 ### RNF-03. Facilidad de uso
 
@@ -149,7 +149,7 @@ Los requisitos no funcionales influyen en las decisiones de arquitectura del sis
 | Requisito | Consideración arquitectónica |
 |---|---|
 | RNF-01. Disponibilidad | Definir el entorno de despliegue, el mantenimiento y los mecanismos de recuperación. |
-| RNF-02. Rendimiento | Optimizar las consultas y validar el comportamiento de Entity Framework Core 9 y Microsoft SQL Server. |
+| RNF-02. Rendimiento | Optimizar las consultas mediante Entity Framework Core 9 y Microsoft SQL Server. Evaluar `IMemoryCache` para datos de referencia no sensibles y validar su efecto mediante pruebas. |
 | RNF-03. Facilidad de uso | Organizar formularios claros utilizando ASP.NET Core MVC 9, Razor, HTML, CSS y Bootstrap. |
 | RNF-04. Seguridad | Aplicar autenticación, autorización, validación y protección de datos. |
 | RNF-05. Compatibilidad | Validar la interfaz en los navegadores y dispositivos definidos. |

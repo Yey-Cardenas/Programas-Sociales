@@ -15,69 +15,95 @@ flowchart TB
     USR["Personal municipal autorizado"]
 
     subgraph APP["Aplicación web · ASP.NET Core MVC 9"]
-        CTRL["Controladores MVC"]
+        subgraph PRESENTACION["Presentación MVC"]
+            VIEW["Vistas Razor (.cshtml)"]
+            CTRL["Controladores MVC"]
+        end
 
         subgraph MODULOS["Módulos funcionales"]
+            subgraph GESTION["Gestión de beneficiarios"]
+                REG["Registro y actualización"]
+                PAD["Consulta del padrón"]
+                EST["Estado del beneficiario"]
+            end
+
+            subgraph VALIDACION["Validación de información"]
+                DUP["Detección de DNI duplicado"]
+                REV["Revalidación periódica"]
+                IMP["Importación y validación<br/>de datos históricos"]
+            end
+
+            subgraph CONSULTAS["Consultas y comunicación"]
+                REP["Reportes y cobertura"]
+                NOTI["Gestión de notificaciones"]
+            end
+        end
+
+        subgraph COMPARTIDOS["Servicios compartidos"]
             AUTH["Autenticación y autorización"]
-            BEN["Gestión de beneficiarios"]
-            DUP["Detección de duplicados"]
-            REV["Revalidación periódica"]
-            NOTI["Notificaciones"]
-            REP["Reportes y cobertura"]
-            IMP["Importación de datos"]
-        end
-
-        subgraph SERVICIOS["Servicios compartidos"]
             SVC["Servicios de aplicación"]
+            AUD["Auditoría de operaciones"]
             CACHE[("Caché en memoria<br/>IMemoryCache")]
-            AUD["Servicio de auditoría"]
         end
 
-        subgraph PERSISTENCIA["Acceso a datos"]
+        subgraph DATOS["Acceso a datos"]
             EF["Entity Framework Core 9"]
-            DB[("Microsoft SQL Server")]
         end
     end
 
-    USR --> CTRL
+    DB[("Microsoft SQL Server")]
+    HIST["Archivos históricos"]
+    MSG["Servicio externo de SMS / WhatsApp"]
 
-    CTRL --> AUTH
-    CTRL --> BEN
+    USR --> VIEW
+    VIEW --> CTRL
+
+    CTRL --> REG
+    CTRL --> PAD
+    CTRL --> EST
     CTRL --> DUP
     CTRL --> REV
-    CTRL --> NOTI
-    CTRL --> REP
     CTRL --> IMP
+    CTRL --> REP
+    CTRL --> NOTI
+    CTRL -.-> AUTH
 
-    AUTH --> SVC
-    BEN --> SVC
+    REG --> SVC
+    PAD --> SVC
+    EST --> SVC
     DUP --> SVC
     REV --> SVC
-    NOTI --> SVC
-    REP --> SVC
     IMP --> SVC
+    REP --> SVC
+    NOTI --> SVC
 
-    SVC -->|"1. Consultar datos"| CACHE
-    CACHE -->|"2. Si hay datos válidos"| SVC
-    CACHE -.->|"3. Si no hay datos válidos"| EF
+    SVC --> AUD
+    SVC -->|"Consultar datos frecuentes"| CACHE
+    CACHE -.->|"Entrada válida"| SVC
+    SVC -->|"Consulta sin entrada válida<br/>o escritura"| EF
     EF --> DB
     DB --> EF
-    EF -.->|"4. Guardar resultado temporal"| CACHE
-    SVC --> AUD
+    EF -.->|"Resultado de consulta"| SVC
+    SVC -.->|"Guardar resultado temporal"| CACHE
 
-    SVC -->|"Operaciones de lectura o escritura"| EF
+    IMP -.->|"Leer y validar"| HIST
+    NOTI -.->|"Solicitar envío"| MSG
 
     classDef actor fill:#E8EAF6,stroke:#3949AB,color:#1A237E
-    classDef modulo fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
-    classDef servicio fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef presentacion fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
+    classDef modulo fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef servicio fill:#E0F2F1,stroke:#00897B,color:#004D40
     classDef cache fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
     classDef datos fill:#FFF3E0,stroke:#F57C00,color:#E65100
+    classDef externo fill:#FCE4EC,stroke:#C2185B,color:#880E4F
 
     class USR actor
-    class CTRL,AUTH,BEN,DUP,REV,NOTI,REP,IMP modulo
-    class SVC,AUD servicio
+    class VIEW,CTRL presentacion
+    class REG,PAD,EST,DUP,REV,IMP,REP,NOTI modulo
+    class AUTH,SVC,AUD servicio
     class CACHE cache
     class EF,DB datos
+    class HIST,MSG externo
 ```
 
 ### Componente de caché en memoria

@@ -30,9 +30,15 @@ Arquitectura de Software (IS-488) – Semestre 2026-II
 
 ## Arquitectura y patrones
 
+## Arquitectura y patrones
+
 La solución se plantea como un **monolito modular** basado en el patrón **Modelo-Vista-Controlador (MVC)**.
 
 La aplicación se organizará en módulos y capas con responsabilidades diferenciadas. Se utilizará inyección de dependencias y se evaluará el uso de Repository y Unit of Work cuando aporten una separación útil de responsabilidades.
+
+Como parte de la propuesta de rendimiento, se evaluará el uso de `IMemoryCache` para almacenar temporalmente datos de referencia consultados con frecuencia que no sean sensibles. Esta estrategia deberá contemplar la expiración y la invalidación de las entradas cuando cambien los datos relacionados. Su efecto se comprobará mediante pruebas, sin asumir mejoras de rendimiento antes de medirlas.
+
+El caché en memoria del servidor será independiente del almacenamiento local que pueda utilizar la PWA en el navegador. Ambas capacidades están sujetas a implementación y validación.
 
 ## Stack tecnológico
 

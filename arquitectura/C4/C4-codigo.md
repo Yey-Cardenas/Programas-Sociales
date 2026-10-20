@@ -11,41 +11,71 @@ La solución propuesta utiliza C# sobre .NET 9, ASP.NET Core MVC 9, Entity Frame
 ## 2. Diagrama UML de clases
 
 
-```mermaid
-flowchart TB
-    USR["Usuario autorizado"]
+```mermaid id="k2m8qa"
+classDiagram
+    direction TB
 
-    subgraph MVC["Aplicación ASP.NET Core MVC 9"]
-        CTRL["Controlador MVC<br/>BeneficiariosController"]
+    class Beneficiario {
+        +Id
+        +DNI
+        +Nombres
+        +Estado
+    }
 
-        subgraph APP["Capa de aplicación"]
-            SVC["Servicio de beneficiarios<br/>BeneficiariosService"]
-            CACHE[("Caché en memoria<br/>IMemoryCache")]
-        end
+    class Comite {
+        +Id
+        +Nombre
+    }
 
-        subgraph DATA["Acceso a datos"]
-            CONTEXT["Contexto de datos<br/>ApplicationDbContext"]
-            EF["Entity Framework Core 9"]
-        end
-    end
+    class ProgramaSocial {
+        +Id
+        +Nombre
+    }
 
-    DB[("Microsoft SQL Server")]
+    class BeneficiariosController {
+        +Consultar()
+        +Registrar()
+        +Actualizar()
+    }
 
-    USR --> CTRL
-    CTRL --> SVC
+    class BeneficiariosService {
+        +ConsultarBeneficiarios()
+        +RegistrarBeneficiario()
+        +ValidarDuplicado()
+    }
 
-    SVC -->|"1. Buscar información"| CACHE
-    CACHE -->|"2. Entrada válida"| SVC
-    CACHE -.->|"3. Sin entrada válida"| CONTEXT
+    class IMemoryCache {
+        <<ASP.NET Core>>
+        +TryGetValue()
+        +Set()
+        +Remove()
+    }
 
-    SVC -->|"Lectura o escritura"| CONTEXT
-    CONTEXT --> EF
-    EF --> DB
-    DB --> EF
-    EF --> CONTEXT
+    class ApplicationDbContext {
+        +Beneficiarios
+        +Comites
+        +ProgramasSociales
+    }
 
-    CONTEXT -.->|"4. Resultado de consulta"| SVC
-    SVC -.->|"5. Almacenar temporalmente"| CACHE
+    class Auditoria {
+        +Id
+        +Usuario
+        +Fecha
+        +Operacion
+    }
+
+    class SQLServer {
+        <<Base de datos>>
+    }
+
+    BeneficiariosController --> BeneficiariosService : coordina operaciones
+    BeneficiariosService --> IMemoryCache : consulta datos elegibles
+    BeneficiariosService --> ApplicationDbContext : consulta y persiste
+    ApplicationDbContext --> SQLServer : acceso mediante EF Core 9
+    BeneficiariosService --> Auditoria : registra operaciones relevantes
+
+    Comite "1" --> "0..*" Beneficiario : asociación propuesta
+    Beneficiario "*" -- "*" ProgramaSocial : participación conceptual
 ```
 
 ## Comportamiento del caché en el código
@@ -59,6 +89,8 @@ Después de recuperar los datos, el servicio podrá almacenarlos temporalmente p
 No todas las consultas deben utilizar caché. Las operaciones de escritura y los datos personales sensibles requieren un tratamiento cuidadoso para evitar inconsistencias o la exposición de información.
 
 Este comportamiento representa el diseño previsto. La implementación de las clases, la configuración del caché y las pruebas de rendimiento se realizarán posteriormente.
+
+**Criterio de uso:** el caché se propone para datos de lectura frecuente y no sensibles, como catálogos de programas sociales. No se utilizará indiscriminadamente para consultas de duplicidad, operaciones de escritura ni información personal sensible. Las entradas deberán tener una expiración definida y actualizarse o invalidarse cuando cambien los datos relacionados. Los nombres y métodos del diagrama son ilustrativos y deberán adaptarse al código que se implemente realmente.
 
 ## 3. Descripción de las clases
 
