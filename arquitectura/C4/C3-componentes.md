@@ -1,42 +1,42 @@
-
+﻿
 ## C4 - Nivel 3: Diagrama de Componentes
 
 ```mermaid
 flowchart TB
-    usuario["Dirigente de comité / Personal municipal"]
+    usuario["Dirigente de comitÃ© / Personal municipal"]
 
-    subgraph aplicacion["APLICACIÓN ASP.NET CORE MVC"]
+    subgraph aplicacion["APLICACIÃ“N ASP.NET CORE MVC"]
         direction TB
 
-        subgraph presentacion["CAPA DE PRESENTACIÓN"]
+        subgraph presentacion["CAPA DE PRESENTACIÃ“N"]
             direction LR
             vistas["Vistas Razor"]
             controladores["Controladores MVC"]
             vistas --> controladores
         end
 
-        subgraph funcional["MÓDULOS FUNCIONALES"]
+        subgraph funcional["MÃ“DULOS FUNCIONALES"]
             direction TB
 
             subgraph fila1[" "]
                 direction LR
-                m1["01. Autenticación<br/>y autorización"]
-                m2["02. Registro<br/>y padrón"]
-                m3["03. Detección<br/>de duplicados"]
-                m4["04. Revalidación<br/>periódica"]
+                m1["01. AutenticaciÃ³n<br/>y autorizaciÃ³n"]
+                m2["02. Registro<br/>y padrÃ³n"]
+                m3["03. DetecciÃ³n<br/>de duplicados"]
+                m4["04. RevalidaciÃ³n<br/>periÃ³dica"]
             end
 
             subgraph fila2[" "]
                 direction LR
                 m5["05. Notificaciones"]
                 m6["06. Cobertura<br/>y reportes"]
-                m7["07. Importación<br/>y depuración"]
+                m7["07. ImportaciÃ³n<br/>y depuraciÃ³n"]
             end
         end
 
         subgraph soporte["SERVICIOS COMPARTIDOS"]
             direction LR
-            auditoria["Servicio de auditoría"]
+            auditoria["Servicio de auditorÃ­a"]
             datos["Acceso a datos<br/>Entity Framework Core"]
         end
 
@@ -61,7 +61,7 @@ flowchart TB
         m7 -.-> auditoria
     end
 
-    bd[("Azure SQL Database")]
+    bd[("Microsoft SQL Server")]
     proveedor["Proveedor SMS / WhatsApp"]
 
     usuario --> vistas
@@ -87,3 +87,4 @@ flowchart TB
     style fila1 fill:transparent,stroke:transparent
     style fila2 fill:transparent,stroke:transparent
 ```
+

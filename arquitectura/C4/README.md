@@ -1,39 +1,48 @@
-# Modelo C4 — Sistema de Gestión de Programas Sociales
 
-## 1. Objetivo
+# Modelo C4 del Sistema de Gestión de Programas Sociales
 
-El modelo C4 permite representar la arquitectura del Sistema de Gestión de Programas Sociales de Huamanga mediante diferentes niveles de detalle. Su finalidad es facilitar la comprensión del sistema, sus usuarios, sus contenedores, sus componentes y la organización conceptual del código.
+**Proyecto:** Sistema de Gestión de Programas Sociales – Huamanga  
+**Estado:** Propuesta de arquitectura; no implica que el sistema esté implementado o desplegado.
 
-## 2. Tecnologías de referencia
+## 1. Stack tecnológico
 
-Los diagramas toman como referencia el stack definido en el README principal:
+- **Backend:** C# con ASP.NET Core 9 MVC.
+- **Frontend:** Vistas Razor (`.cshtml`), HTML5, CSS3 y Bootstrap.
+- **PWA:** Capacidades de funcionamiento limitado sin conexión y sincronización posterior, sujetas a implementación y pruebas.
+- **ORM:** Entity Framework Core 9.
+- **Base de datos:** Microsoft SQL Server.
+- **Estilo arquitectónico:** Monolito modular.
 
-- C# y ASP.NET Core 9.
-- MVC con vistas Razor (`.cshtml`).
-- HTML5, CSS3 y Bootstrap.
-- Entity Framework Core 9.
-- Microsoft SQL Server.
-- Arquitectura de monolito modular.
+## 2. Diagramas de arquitectura
 
-## 3. Diagramas incluidos
+1. [Nivel 1 — Contexto del sistema](C4-Nivel-1-Contexto.md)
+2. [Nivel 2 — Contenedores](C4-Nivel-2-Contenedores.md)
+3. [Nivel 3 — Componentes](C4-Nivel-3-Componentes.md)
+4. [Nivel 4 — Código (vista complementaria)](C4-Nivel-4-Codigo.md)
+5. [Vista de despliegue físico propuesta](C4-Despliegue-Fisico.md)
 
-| Archivo | Nivel | Propósito |
-|---|---|---|
-| `C1-contexto.md` | C1 — Contexto | Muestra los usuarios, el sistema y sus relaciones externas. |
-| `C2-contenedores.md` | C2 — Contenedores | Presenta las principales unidades ejecutables y los almacenes de datos. |
-| `C3-componentes.md` | C3 — Componentes | Describe los componentes internos de la aplicación y sus relaciones. |
-| `C4-codigo.md` | C4 — Código | Presenta una vista conceptual de clases y responsabilidades. |
+## 3. Descripción de los niveles
 
-## 4. Criterios de uniformidad
+- **Nivel 1 — Contexto:** identifica los usuarios, el sistema principal y las dependencias externas.
+- **Nivel 2 — Contenedores:** muestra la aplicación web, las capacidades PWA, la base de datos y sus comunicaciones.
+- **Nivel 3 — Componentes:** describe las responsabilidades internas de la aplicación y sus relaciones.
+- **Nivel 4 — Código:** presenta clases y secuencias ilustrativas para el registro de inscripciones.
+- **Despliegue físico:** propone una distribución de los elementos en un entorno de ejecución todavía por definir.
 
-- Todos los diagramas deben representar el mismo sistema.
-- Se debe mantener ASP.NET Core MVC como tecnología de aplicación web.
-- La base de datos prevista debe identificarse como Microsoft SQL Server.
-- Entity Framework Core 9 debe aparecer como tecnología de acceso a datos.
-- La arquitectura debe representarse como monolito modular.
-- Los actores y las integraciones externas deben conservar nombres coherentes entre niveles.
-- Los elementos todavía no implementados deben entenderse como parte de la propuesta arquitectónica.
+## 4. Criterios de interpretación
 
-## 5. Alcance
+- El dirigente administra únicamente los registros de su comité asignado.
+- El personal municipal autorizado supervisa los registros y atiende las alertas que requieren revisión.
+- Los beneficiarios son destinatarios de notificaciones; no se consideran usuarios que inician sesión en el alcance actual.
+- La aplicación web utiliza MVC y Razor dentro de un monolito modular. La PWA forma parte de la misma solución y no constituye un frontend independiente.
+- Los padrones históricos se someten a validación antes de incorporarse a los registros centrales.
+- RENIEC y SISFOH se consideran posibles integraciones futuras, no dependencias confirmadas de la primera versión.
+- Las operaciones realizadas sin conexión no se consideran confirmadas hasta que el servidor procese correctamente la sincronización.
 
-Los diagramas representan el diseño arquitectónico documentado. Los nombres de clases, métodos y componentes del nivel C4 de código son conceptuales mientras no se contrasten con los archivos reales de implementación.
+## 5. Estado de la propuesta
+
+Los diagramas representan decisiones de diseño. Las clases, integraciones, funcionalidades offline y recursos de infraestructura descritos deben verificarse durante la implementación.
+
+La plataforma concreta de alojamiento y la configuración de red se definirán antes del despliegue. Microsoft SQL Server es el motor de base de datos elegido; no se presupone que esté alojado en Azure.
+
+Los diagramas se mantienen en Markdown con Mermaid para facilitar su lectura, edición y visualización en GitHub.
