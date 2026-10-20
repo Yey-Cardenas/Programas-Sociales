@@ -27,21 +27,15 @@ La organización modular permitirá separar las responsabilidades relacionadas c
 | Base de datos | Microsoft SQL Server |
 | Organización | Monolito modular |
 
-## 4. Patrones de diseño
 
-### Repository
+### Patrones de persistencia propuestos
 
-Se contempla para organizar el acceso a los datos y evitar que la lógica de negocio dependa directamente de detalles de persistencia.
+Se contempla evaluar los patrones Repository y Unit of Work para organizar el acceso a los datos y coordinar las operaciones de persistencia. Sin embargo, su incorporación definitiva queda pendiente de validación durante la implementación, de acuerdo con las necesidades reales del sistema.
 
-### Unit of Work
+Entity Framework Core proporciona mecanismos de seguimiento de entidades y coordinación de cambios mediante `DbContext`. Por ello, no se considera obligatorio implementar clases adicionales de Repository o Unit of Work si no existe una necesidad concreta que justifique su uso.
 
-Se contempla para coordinar operaciones de persistencia relacionadas y mantener la consistencia de los cambios realizados en una misma unidad de trabajo.
+La decisión final deberá considerar la complejidad del acceso a datos, la separación de responsabilidades, la facilidad de mantenimiento y la posibilidad de realizar pruebas. La documentación se actualizará cuando la implementación permita confirmar los patrones utilizados.
 
-### Inyección de dependencias
-
-ASP.NET Core permite registrar y proporcionar los servicios que necesitan los controladores y otros componentes, reduciendo el acoplamiento entre ellos.
-
-Estos patrones forman parte del diseño propuesto. Su presencia definitiva deberá comprobarse en el código fuente cuando se desarrolle o revise la implementación.
 
 ## 5. Justificación
 
