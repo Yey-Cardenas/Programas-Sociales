@@ -1,114 +1,54 @@
-﻿# Estilo arquitectónico
+﻿# Estilo Arquitectónico
 
-**Proyecto:** Sistema de Gestión de Programas Sociales – Huamanga
-**Curso:** Arquitectura de Software (IS-488) – Semestre 2026-II
-**Integrantes:** Cárdenas García, Yery May · Chipana Nuñez, Ever Neils
+## 1. Estilo seleccionado
 
-## 1. Contexto
+El Sistema de Gestión de Programas Sociales de Huamanga utilizará como estilo principal un **monolito modular**, organizado mediante el patrón MVC de ASP.NET Core.
 
-El sistema centraliza el padrón de beneficiarios del **Vaso de Leche** y de los **Comedores Populares** de la Municipalidad de Huamanga. Hoy esa información suele estar dispersa en listas y hojas de cálculo por comité o comedor, lo que genera duplicados, errores y poca trazabilidad.
+En este enfoque, los módulos se organizan dentro de una aplicación principal y comparten la infraestructura necesaria para su funcionamiento. La separación por módulos busca mantener responsabilidades claras y facilitar el mantenimiento.
 
-## 2. Drivers que condicionan la elección
+## 2. Características principales
 
-| ID | Driver | Tipo |
-|---|---|---|
-| D1 | El padrón debe ser íntegro: sin beneficiarios duplicados dentro de un programa ni entre programas. | Requisito / calidad |
-| D2 | Los datos personales deben protegerse (Ley N.° 29733, Protección de Datos Personales). | Calidad / restricción legal |
-| D3 | Cada cambio del padrón y cada entrega deben ser trazables (quién, cuándo, qué). | Calidad |
-| D4 | El personal municipal y los responsables de comités tienen poca experiencia técnica. | Calidad (usabilidad) |
-| D5 | Deben poder añadirse nuevos programas sociales sin rehacer el sistema. | Calidad (mantenibilidad) |
-| D6 | Debe poder integrarse con servicios externos de validación (identidad, clasificación socioeconómica). | Restricción |
-| D7 | Aplicación web con API REST, Git/GitHub y un equipo de 2 personas. | Restricción de proyecto |
-| D8 | Disponibilidad en horario laboral y carga moderada y predecible (una municipalidad provincial). | Calidad |
+- Una aplicación principal desplegable como una unidad.
+- Separación funcional en módulos.
+- Uso de MVC para organizar la presentación y el procesamiento de solicitudes.
+- Acceso a datos mediante Entity Framework Core 9.
+- Persistencia en Microsoft SQL Server.
+- Uso de inyección de dependencias para gestionar los servicios.
 
-## 3. Estilos candidatos
+## 3. Organización por capas
 
-| Criterio | Capas (monolito) | Microservicios | Hexagonal | Orientada a eventos |
-|---|:-:|:-:|:-:|:-:|
-| Simplicidad y costo (D7, D8) | 5 | 1 | 3 | 2 |
-| Integridad de datos con transacciones (D1) | 5 | 2 | 5 | 3 |
-| Seguridad y auditoría centralizadas (D2, D3) | 4 | 3 | 4 | 3 |
-| Mantenibilidad y evolución (D5) | 4 | 4 | 5 | 3 |
-| Capacidad del equipo (D7) | 5 | 1 | 3 | 2 |
-| Escalabilidad | 3 | 5 | 3 | 5 |
-| **Total (máx. 30)** | **26** | **16** | **23** | **18** |
-
-*Puntuación cualitativa de 1 (desfavorable) a 5 (favorable), según los drivers.*
-
-## 4. Decisión
-
-**Se adopta una arquitectura en capas (3 capas) desplegada como monolito.**
-
-Es la continuación de la arquitectura inicial del Entregable 02.
-
-| Driver | Por qué las capas lo favorecen |
+| Capa | Responsabilidad |
 |---|---|
-| D1 | Un solo almacén de datos permite transacciones y restricciones de unicidad (por ejemplo, DNI único por programa). |
-| D2, D3 | La seguridad y la auditoría se aplican en un único punto, la capa de lógica de negocio. |
-| D4 | La capa de presentación se diseña solo para el usuario, sin mezclar reglas. |
-| D5 | Cada programa social es un módulo nuevo en la capa de negocio. |
-| D6 | Las integraciones externas se encapsulan en la capa de negocio. |
-| D7, D8 | Es simple de construir, probar y desplegar con un equipo de dos personas. |
+| Presentación | Vistas Razor, controladores y comunicación con el usuario. |
+| Aplicación | Coordinación de casos de uso y servicios del sistema. |
+| Dominio | Entidades y reglas de negocio. |
+| Infraestructura | Persistencia, Entity Framework Core y comunicación con servicios externos. |
 
-Se adopta una arquitectura en capas (Monolito Modular) optimizada para el patrón MVC en ASP.NET Core.   
+Esta organización representa una separación lógica de responsabilidades. No significa que necesariamente existan cuatro proyectos físicos independientes.
 
-## 5. Capas y responsabilidades
+## 4. Módulos funcionales previstos
 
-| Capa | Responsabilidad | Contiene |
-|---|---|---|
-| Presentación | Interacción con el usuario. | Aplicación web, consumo de la API REST. |
-| Lógica de negocio | Reglas del dominio, validaciones, seguridad y auditoría. | Módulos de beneficiarios, programas, inscripciones, entregas, usuarios y reportes. |
-| Datos | Persistencia de la información. | Base de datos relacional. |
+1. Gestión de usuarios y acceso.
+2. Registro y actualización de beneficiarios.
+3. Gestión de comités y programas sociales.
+4. Validación de registros duplicados.
+5. Revalidación periódica de beneficiarios.
+6. Reportes y cobertura.
+7. Importación y depuración de datos.
+8. Auditoría de operaciones.
 
-**Regla de dependencia:** la presentación nunca accede directamente a la base de datos.
+Los módulos definitivos deberán ajustarse al alcance funcional y a la implementación del proyecto.
 
-## 6. Diagrama
+## 5. Ventajas
 
-```mermaid
-flowchart TD
-    subgraph USUARIOS["USUARIOS"]
-        Admin["Administrador municipal"]
-        Operador["Operador de programa"]
-        Resp["Responsable de comité / comedor"]
-    end
+- Menor complejidad de despliegue que una solución distribuida en múltiples servicios.
+- Organización de las funcionalidades por responsabilidades.
+- Facilidad para compartir componentes y servicios.
+- Adecuación para un proyecto que necesita evolucionar progresivamente.
+- Posibilidad de mantener una estructura clara sin introducir complejidad innecesaria.
 
-    subgraph PRES["CAPA DE PRESENTACIÓN"]
-        Web["Aplicación web"]
-    end
+## 6. Consideraciones
 
-    subgraph NEG["CAPA DE LÓGICA DE NEGOCIO"]
-        API["API REST"]
-        Mod["Módulos: Beneficiarios · Programas · Inscripciones · Entregas · Usuarios · Reportes"]
-    end
+El monolito modular no implica que todas las funcionalidades estén terminadas. La PWA, la sincronización sin conexión y las integraciones externas deberán verificarse durante el desarrollo.
 
-    subgraph DAT["CAPA DE DATOS"]
-        BD[("Base de datos relacional")]
-    end
-
-    subgraph EXT["SISTEMAS EXTERNOS (posibles)"]
-        Ident["Validación de identidad"]
-        Socio["Clasificación socioeconómica"]
-    end
-
-    USUARIOS --> PRES
-    PRES --> NEG
-    API --> Mod
-    NEG --> DAT
-    NEG -->|"integración"| EXT
-```
-
-## 7. Consecuencias
-
-**Ventajas**
-- Menor complejidad y costo de desarrollo y despliegue.
-- Consistencia fuerte del padrón gracias a transacciones.
-- Seguridad y auditoría en un solo lugar.
-
-**Desventajas y mitigación**
-
-| Desventaja | Mitigación |
-|---|---|
-| Escalar implica escalar todo el sistema. | La carga es moderada; se puede replicar la aplicación si crece. |
-| Riesgo de acoplamiento entre módulos. | Organizar el código por módulos con límites claros (Mitigación: Usar Inyección de Dependencias nativa de .NET para mantener los servicios desacoplados). |
-| Un fallo puede afectar a todo el sistema. | Respaldos periódicos y manejo de errores en las integraciones. |
-
+La arquitectura se considera una propuesta documentada y deberá contrastarse con el código fuente cuando la implementación esté disponible.

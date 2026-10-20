@@ -1,24 +1,49 @@
-# Restricciones
+# 05. Restricciones del Sistema
 
-## Restricciones de la propuesta
+## 1. Restricciones tecnológicas
 
-| ID | Restricción | Descripción |
-|----|-------------|-------------|
-| RC01 | Arquitectura | La solución debe construirse como un **Monolito Modular**: un único backend desplegable con módulos cohesionados, no como servicios distribuidos en red. |
-| RC02 | Aplicación web / PWA | El cliente debe ser una aplicación web accesible desde navegador, instalable como PWA con soporte offline-first (React + Service Worker). |
-| RC03 | API REST | La comunicación entre el frontend y el backend debe realizarse mediante una API REST. |
-| RC04 | Tecnología de backend | El backend debe desarrollarse con Node.js 20 LTS y Express, usando Prisma como ORM. |
-| RC05 | Base de datos | La información debe almacenarse en PostgreSQL 15 con la extensión PostGIS para la cobertura geoespacial. |
-| RC06 | Gateway de mensajería | El sistema debe integrarse con un gateway externo de SMS/WhatsApp para notificar a los beneficiarios. |
-| RC07 | Infraestructura | El despliegue se realizará en dos servidores (aplicaciones y base de datos) con Ubuntu Server 22.04 LTS; la base de datos solo será accesible desde el servidor de aplicaciones. |
-| RC08 | Dispositivos | Debe funcionar en celulares Android 8 o superior y en navegadores web modernos. |
-| RC09 | Alcance de integraciones | En la primera versión, la validación del DNI se limita a cruzar los datos registrados en el propio sistema; RENIEC y SISFOH quedan para una segunda fase. |
-| RC10 | Control de versiones | El código fuente debe gestionarse con Git y mantenerse en un repositorio compartido en GitHub. |
+El desarrollo del Sistema de Gestión de Programas Sociales de Huamanga se plantea con las siguientes tecnologías:
 
-## Restricciones adicionales propuestas por el equipo
+- **Lenguaje de programación:** C#.
+- **Framework web:** ASP.NET Core 9 con el patrón MVC.
+- **Interfaz de usuario:** vistas Razor (`.cshtml`), HTML5, CSS3 y Bootstrap.
+- **Gestión de datos:** Entity Framework Core 9.
+- **Base de datos:** Microsoft SQL Server.
+- **Organización arquitectónica:** monolito modular.
 
-| ID | Tipo | Restricción | Descripción |
-|----|------|-------------|-------------|
-| RC11 | Legal | Protección de datos personales | El sistema maneja datos personales (DNI, dirección); su tratamiento debe respetar la normativa peruana de protección de datos personales (Ley N.° 29733). |
-| RC12 | Organizacional | Presupuesto municipal limitado | La solución debe ser de bajo costo de infraestructura y operación, por eso se limita a dos servidores. |
-| RC13 | Organizacional | Usuarios con poca experiencia | Los dirigentes de comité tienen poca experiencia con tecnología, por lo que se requiere capacitación y una interfaz simple. |
+Las tecnologías indicadas deben mantenerse uniformes en los documentos de análisis y arquitectura, salvo que exista una decisión formal de cambio.
+
+## 2. Restricciones de arquitectura
+
+- El sistema se organizará como un monolito modular, separando las responsabilidades funcionales en módulos.
+- Se utilizará MVC para organizar los controladores, las vistas y el acceso a los datos.
+- Se contempla el uso de Repository y Unit of Work para organizar las operaciones de persistencia, según las necesidades del proyecto.
+- La inyección de dependencias permitirá gestionar los servicios y sus dependencias.
+- La solución no se documentará como una arquitectura basada en React, Node.js o PostgreSQL, porque estas tecnologías no corresponden al stack definido en el README principal.
+
+## 3. Restricciones de datos
+
+- Microsoft SQL Server será el gestor de base de datos previsto.
+- Entity Framework Core 9 será el ORM utilizado para el acceso a los datos.
+- La información de los beneficiarios deberá protegerse frente al acceso no autorizado.
+- Las operaciones importantes deberán contemplar mecanismos de validación y auditoría.
+- El esquema definitivo de la base de datos deberá validarse durante el diseño e implementación.
+
+## 4. Restricciones operativas
+
+- El sistema deberá considerar las condiciones de conectividad limitada de algunas zonas de Huamanga.
+- Se contempla una PWA con capacidades de funcionamiento sin conexión y sincronización posterior, cuya implementación deberá validarse.
+- La importación de información desde Excel deberá contemplar validaciones antes de incorporar los registros al sistema.
+- Las funcionalidades de mensajería por SMS o WhatsApp dependerán de la disponibilidad y configuración de servicios externos.
+
+## 5. Restricciones de seguridad
+
+- El acceso a las funcionalidades deberá controlarse de acuerdo con los roles definidos.
+- Los datos personales de los beneficiarios deberán manejarse con medidas de seguridad apropiadas.
+- Las entradas del usuario deberán validarse antes de procesarse.
+- Las credenciales y cadenas de conexión no deberán publicarse en el repositorio.
+- La auditoría deberá permitir registrar las operaciones relevantes, según las reglas que se definan para el sistema.
+
+## 6. Consideraciones de alcance
+
+Este documento describe las restricciones tecnológicas y operativas previstas para el proyecto académico. Las funcionalidades que todavía no se hayan desarrollado, como el trabajo sin conexión, la sincronización o la integración con servicios de mensajería, se consideran objetivos de diseño y no funcionalidades implementadas.
