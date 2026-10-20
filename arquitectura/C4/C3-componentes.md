@@ -14,90 +14,87 @@ Este diagrama es una propuesta arquitectónica. Los componentes representados de
 flowchart TB
     USR["Personal municipal autorizado"]
 
-    subgraph PRESENTACION["1. Capa de presentación"]
+    subgraph APP["Aplicación web · ASP.NET Core MVC 9"]
         CTRL["Controladores MVC"]
-        VIEW["Vistas Razor (.cshtml)"]
-    end
 
-    subgraph MODULOS["2. Módulos funcionales"]
-        direction TB
-
-        subgraph GESTION["Gestión de beneficiarios"]
-            REG["Registro y actualización"]
-            PAD["Consulta del padrón"]
-            EST["Estado del beneficiario"]
-        end
-
-        subgraph VALIDACION["Validación de información"]
-            DUP["Detección de DNI duplicado"]
-            REVA["Revalidación periódica"]
-            IMP["Importación y validación de datos históricos"]
-        end
-
-        subgraph CONSULTA["Consultas y comunicación"]
+        subgraph MODULOS["Módulos funcionales"]
+            AUTH["Autenticación y autorización"]
+            BEN["Gestión de beneficiarios"]
+            DUP["Detección de duplicados"]
+            REV["Revalidación periódica"]
+            NOTI["Notificaciones"]
             REP["Reportes y cobertura"]
-            NOTI["Gestión de notificaciones"]
+            IMP["Importación de datos"]
+        end
+
+        subgraph SERVICIOS["Servicios compartidos"]
+            SVC["Servicios de aplicación"]
+            CACHE[("Caché en memoria<br/>IMemoryCache")]
+            AUD["Servicio de auditoría"]
+        end
+
+        subgraph PERSISTENCIA["Acceso a datos"]
+            EF["Entity Framework Core 9"]
+            DB[("Microsoft SQL Server")]
         end
     end
 
-    subgraph COMPARTIDOS["3. Servicios compartidos"]
-        AUTH["Autenticación y autorización"]
-        AUD["Auditoría de operaciones"]
-        SERV["Servicios de aplicación"]
-    end
-
-    subgraph DATOS["4. Acceso a datos"]
-        CTX["DbContext de Entity Framework Core 9"]
-        SQL[("Microsoft SQL Server")]
-    end
-
-    HIST["Archivos históricos<br/>Excel y registros disponibles"]
-    MSG["Servicio externo de SMS / WhatsApp"]
-
-    USR --> VIEW
-    VIEW --> CTRL
-
-    CTRL --> REG
-    CTRL --> PAD
-    CTRL --> EST
-    CTRL --> DUP
-    CTRL --> REVA
-    CTRL --> IMP
-    CTRL --> REP
-    CTRL --> NOTI
+    USR --> CTRL
 
     CTRL --> AUTH
+    CTRL --> BEN
+    CTRL --> DUP
+    CTRL --> REV
+    CTRL --> NOTI
+    CTRL --> REP
+    CTRL --> IMP
 
-    REG --> SERV
-    PAD --> SERV
-    EST --> SERV
-    DUP --> SERV
-    REVA --> SERV
-    IMP --> SERV
-    REP --> SERV
-    NOTI --> SERV
+    AUTH --> SVC
+    BEN --> SVC
+    DUP --> SVC
+    REV --> SVC
+    NOTI --> SVC
+    REP --> SVC
+    IMP --> SVC
 
-    SERV --> AUD
-    SERV --> CTX
-    CTX --> SQL
+    SVC -->|"1. Consultar datos"| CACHE
+    CACHE -->|"2. Si hay datos válidos"| SVC
+    CACHE -.->|"3. Si no hay datos válidos"| EF
+    EF --> DB
+    DB --> EF
+    EF -.->|"4. Guardar resultado temporal"| CACHE
+    SVC --> AUD
 
-    IMP -. "Lee y valida registros" .-> HIST
-    NOTI -. "Solicita el envío de mensajes" .-> MSG
+    SVC -->|"Operaciones de lectura o escritura"| EF
 
     classDef actor fill:#E8EAF6,stroke:#3949AB,color:#1A237E
-    classDef presentacion fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
-    classDef gestion fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
-    classDef compartidos fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
+    classDef modulo fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
+    classDef servicio fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef cache fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
     classDef datos fill:#FFF3E0,stroke:#F57C00,color:#E65100
-    classDef externo fill:#ECEFF1,stroke:#546E7A,color:#263238
 
     class USR actor
-    class CTRL,VIEW presentacion
-    class REG,PAD,EST,DUP,REVA,IMP,REP,NOTI gestion
-    class AUTH,AUD,SERV compartidos
-    class CTX,SQL datos
-    class HIST,MSG externo
+    class CTRL,AUTH,BEN,DUP,REV,NOTI,REP,IMP modulo
+    class SVC,AUD servicio
+    class CACHE cache
+    class EF,DB datos
 ```
+
+### Componente de caché en memoria
+
+Se propone utilizar `IMemoryCache`, proporcionado por ASP.NET Core, para almacenar temporalmente los resultados de consultas frecuentes. Este componente estará integrado en la aplicación y será utilizado por los servicios de aplicación cuando corresponda.
+
+El funcionamiento previsto es el siguiente:
+
+1. El servicio de aplicación solicita la información al caché.
+2. Si existe una entrada válida, se devuelve el resultado almacenado.
+3. Si no existe una entrada válida, se consulta la información mediante Entity Framework Core 9 y Microsoft SQL Server.
+4. El resultado obtenido puede almacenarse temporalmente para futuras consultas.
+5. Cuando se modifiquen datos relacionados, se deberán actualizar o invalidar las entradas correspondientes.
+
+Inicialmente, se priorizarán catálogos y otros datos de consulta frecuente que no contengan información personal sensible. Se definirán tiempos de expiración para evitar conservar información desactualizada.
+
+Esta estrategia es una propuesta arquitectónica pendiente de implementación y validación mediante pruebas de rendimiento.
 
 ## 3. Descripción de los componentes
 

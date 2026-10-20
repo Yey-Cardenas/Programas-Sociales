@@ -10,79 +10,55 @@ La solución propuesta utiliza C# sobre .NET 9, ASP.NET Core MVC 9, Entity Frame
 
 ## 2. Diagrama UML de clases
 
-```mermaid id="umlprog01"
-classDiagram
-    direction TB
 
-    class Beneficiario {
-        +int Id
-        +string DNI
-        +string Nombres
-        +string Apellidos
-        +string Estado
-        +DateTime FechaRegistro
-    }
+```mermaid
+flowchart TB
+    USR["Usuario autorizado"]
 
-    class Comite {
-        +int Id
-        +string Nombre
-        +string Ubicacion
-    }
+    subgraph MVC["Aplicación ASP.NET Core MVC 9"]
+        CTRL["Controlador MVC<br/>BeneficiariosController"]
 
-    class ProgramaSocial {
-        +int Id
-        +string Nombre
-        +string Descripcion
-        +bool Activo
-    }
+        subgraph APP["Capa de aplicación"]
+            SVC["Servicio de beneficiarios<br/>BeneficiariosService"]
+            CACHE[("Caché en memoria<br/>IMemoryCache")]
+        end
 
-    class Auditoria {
-        +int Id
-        +string Usuario
-        +string Operacion
-        +DateTime FechaHora
-        +string Detalle
-    }
+        subgraph DATA["Acceso a datos"]
+            CONTEXT["Contexto de datos<br/>ApplicationDbContext"]
+            EF["Entity Framework Core 9"]
+        end
+    end
 
-    class BeneficiarioController {
-        +Index()
-        +Details(int id)
-        +Create()
-        +Edit(int id)
-    }
+    DB[("Microsoft SQL Server")]
 
-    class BeneficiarioService {
-        +ListarBeneficiarios()
-        +RegistrarBeneficiario()
-        +ValidarDNI()
-        +ActualizarEstado()
-    }
+    USR --> CTRL
+    CTRL --> SVC
 
-    class ApplicationDbContext {
-        +DbSet~Beneficiario~ Beneficiarios
-        +DbSet~Comite~ Comites
-        +DbSet~ProgramaSocial~ ProgramasSociales
-        +DbSet~Auditoria~ Auditorias
-        +SaveChangesAsync()
-    }
+    SVC -->|"1. Buscar información"| CACHE
+    CACHE -->|"2. Entrada válida"| SVC
+    CACHE -.->|"3. Sin entrada válida"| CONTEXT
 
-    class SQLServer {
-        <<Base de datos>>
-    }
+    SVC -->|"Lectura o escritura"| CONTEXT
+    CONTEXT --> EF
+    EF --> DB
+    DB --> EF
+    EF --> CONTEXT
 
-    BeneficiarioController --> BeneficiarioService : coordina
-    BeneficiarioService --> ApplicationDbContext : consulta y guarda
-
-    ApplicationDbContext --> Beneficiario : persiste
-    ApplicationDbContext --> Comite : persiste
-    ApplicationDbContext --> ProgramaSocial : persiste
-    ApplicationDbContext --> Auditoria : persiste
-
-    ApplicationDbContext --> SQLServer : mediante EF Core 9
-
-    Beneficiario "*" --> "1" Comite : pertenece a
-    Beneficiario "*" --> "*" ProgramaSocial : participa en
+    CONTEXT -.->|"4. Resultado de consulta"| SVC
+    SVC -.->|"5. Almacenar temporalmente"| CACHE
 ```
+
+## Comportamiento del caché en el código
+
+La estrategia propuesta incorpora `IMemoryCache` en la capa de aplicación para reducir consultas repetidas a la base de datos cuando se solicitan datos de lectura frecuente.
+
+El servicio de aplicación comprobará primero si la información solicitada está disponible en el caché. Si existe una entrada válida, podrá devolverla directamente. Si no existe, obtendrá los datos a través del contexto de datos y Entity Framework Core 9, que se comunica con Microsoft SQL Server.
+
+Después de recuperar los datos, el servicio podrá almacenarlos temporalmente para solicitudes posteriores. Las entradas deberán tener un tiempo de expiración definido y deberán invalidarse o actualizarse cuando se modifique la información relacionada.
+
+No todas las consultas deben utilizar caché. Las operaciones de escritura y los datos personales sensibles requieren un tratamiento cuidadoso para evitar inconsistencias o la exposición de información.
+
+Este comportamiento representa el diseño previsto. La implementación de las clases, la configuración del caché y las pruebas de rendimiento se realizarán posteriormente.
 
 ## 3. Descripción de las clases
 

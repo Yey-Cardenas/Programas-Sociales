@@ -82,76 +82,86 @@ Utiliza Entity Framework Core 9 para realizar las operaciones de consulta y pers
 
 Los patrones Repository y Unit of Work no se consideran obligatorios en esta propuesta. Su uso deberá evaluarse cuando exista una implementación concreta y se pueda justificar su beneficio.
 
+## Estrategia de caché en memoria
+
+El sistema mantiene un enfoque de monolito modular: los módulos funcionales forman parte de una única aplicación y comparten servicios internos. Dentro de esta estructura, se propone utilizar `IMemoryCache` de ASP.NET Core para almacenar temporalmente resultados de consultas frecuentes.
+
+El caché no constituye un microservicio ni una base de datos independiente. Se ejecuta dentro del proceso de la aplicación web y puede reducir las consultas repetidas a Microsoft SQL Server cuando la información solicitada está disponible y vigente.
+
+Para mantener la coherencia de los datos, se deberán definir tiempos de expiración e invalidar o actualizar las entradas relacionadas cuando se realicen modificaciones. Se priorizarán catálogos y datos de consulta frecuente que no contengan información personal sensible.
+
+Esta estrategia es distinta del almacenamiento local previsto para las capacidades PWA: `IMemoryCache` funciona en el servidor, mientras que el almacenamiento local permite conservar determinados datos en el navegador.
+
+La estrategia está propuesta a nivel arquitectónico y deberá implementarse y validarse mediante pruebas antes de afirmar que produce mejoras de rendimiento.
+
 ## 6. Diagrama del estilo arquitectónico
 
-```mermaid id="estilo_modular_mvc"
+
+```mermaid
 flowchart TB
     USR["Personal municipal autorizado"]
+    WEB["Navegador web"]
 
-    subgraph SISTEMA["Monolito modular · ASP.NET Core MVC 9"]
-        direction TB
+    subgraph APP["Monolito modular · ASP.NET Core MVC 9"]
+        MVC["Capa de presentación<br/>Controladores y vistas Razor"]
 
-        subgraph PRESENTACION["Presentación · MVC"]
-            CTRL["Controladores"]
-            VIEW["Vistas Razor"]
+        subgraph MOD["Módulos funcionales"]
+            M1["Gestión de beneficiarios"]
+            M2["Detección de duplicados"]
+            M3["Revalidación periódica"]
+            M4["Notificaciones"]
+            M5["Reportes e importación"]
         end
 
-        subgraph FUNCIONAL["Módulos funcionales"]
-            BEN["Gestión de beneficiarios"]
-            DUP["Detección de duplicados"]
-            REVA["Revalidación periódica"]
-            IMP["Importación de datos"]
-            REP["Reportes y cobertura"]
-            NOTI["Notificaciones"]
-        end
-
-        subgraph COMPARTIDOS["Servicios compartidos"]
-            AUTH["Autenticación y autorización"]
+        subgraph SHARED["Servicios compartidos"]
+            SVC["Servicios de aplicación"]
+            CACHE[("Caché en memoria<br/>IMemoryCache")]
             AUD["Auditoría"]
-            SERV["Servicios de aplicación"]
         end
 
-        subgraph PERSISTENCIA["Persistencia"]
-            EF["Entity Framework Core 9"]
-        end
+        DATA["Acceso a datos<br/>Entity Framework Core 9"]
     end
 
     DB[("Microsoft SQL Server")]
+    EXT["Servicios externos de mensajería"]
+    LOCAL[("Almacenamiento local PWA")]
 
-    USR --> VIEW
-    VIEW --> CTRL
+    USR --> WEB
+    WEB --> MVC
 
-    CTRL --> BEN
-    CTRL --> DUP
-    CTRL --> REVA
-    CTRL --> IMP
-    CTRL --> REP
-    CTRL --> NOTI
+    MVC --> M1
+    MVC --> M2
+    MVC --> M3
+    MVC --> M4
+    MVC --> M5
 
-    CTRL --> AUTH
+    M1 --> SVC
+    M2 --> SVC
+    M3 --> SVC
+    M4 --> SVC
+    M5 --> SVC
 
-    BEN --> SERV
-    DUP --> SERV
-    REVA --> SERV
-    IMP --> SERV
-    REP --> SERV
-    NOTI --> SERV
+    SVC <--> CACHE
+    SVC --> AUD
+    SVC --> DATA
+    DATA --> DB
 
-    SERV --> AUD
-    SERV --> EF
-    EF --> DB
+    M4 -. "Solicitudes de envío" .-> EXT
+    WEB <--> LOCAL
 
     classDef actor fill:#E8EAF6,stroke:#3949AB,color:#1A237E
     classDef presentacion fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
-    classDef funcional fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
-    classDef compartidos fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
-    classDef persistencia fill:#FFF3E0,stroke:#F57C00,color:#E65100
+    classDef modulo fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef cache fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
+    classDef infraestructura fill:#FFF3E0,stroke:#F57C00,color:#E65100
+    classDef externo fill:#FCE4EC,stroke:#C2185B,color:#880E4F
 
     class USR actor
-    class CTRL,VIEW presentacion
-    class BEN,DUP,REVA,IMP,REP,NOTI funcional
-    class AUTH,AUD,SERV compartidos
-    class EF,DB persistencia
+    class WEB,MVC presentacion
+    class M1,M2,M3,M4,M5,SVC,AUD modulo
+    class CACHE cache
+    class DATA,DB,LOCAL infraestructura
+    class EXT externo
 ```
 
 ## 7. Consideraciones de conectividad

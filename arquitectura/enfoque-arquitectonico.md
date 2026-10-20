@@ -29,9 +29,16 @@ flowchart TB
     end
 
     subgraph APLICACION["Aplicación web · ASP.NET Core MVC 9"]
-        C["Controllers"]
+        C["Controllers MVC"]
+
+        subgraph MODULOS["Módulos funcionales"]
+            M["Gestión de beneficiarios y programas"]
+            R["Reportes y consultas"]
+            O["Otros módulos funcionales"]
+        end
+
         S["Servicios de aplicación"]
-        M["Módulos funcionales"]
+        CACHE[("Caché en memoria<br/>IMemoryCache")]
         DI["Inyección de dependencias"]
     end
 
@@ -43,21 +50,35 @@ flowchart TB
     U --> V
     V --> B
     B --> C
-    C --> S
-    S --> M
+    C --> M
+    C --> R
+    C --> O
+
+    M --> S
+    R --> S
+    O --> S
+
+    S -->|"1. Consultar"| CACHE
+    CACHE -.->|"2. Si no existe la entrada"| EF
+    EF --> DB
+    DB -.->|"3. Devolver datos"| EF
+    EF -.->|"4. Guardar resultado en caché"| CACHE
+    CACHE -->|"5. Devolver resultado"| S
+
     DI -.-> C
     DI -.-> S
-    M --> EF
-    EF --> DB
+    DI -.-> CACHE
 
     classDef usuario fill:#E8EAF6,stroke:#3949AB,color:#1A237E
     classDef presentacion fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
     classDef aplicacion fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef cache fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
     classDef datos fill:#FFF3E0,stroke:#F57C00,color:#E65100
 
     class U usuario
     class V,B presentacion
-    class C,S,M,DI aplicacion
+    class C,M,R,O,S,DI aplicacion
+    class CACHE cache
     class EF,DB datos
 ```
 
@@ -71,6 +92,7 @@ flowchart TB
 | Presentación | Razor, HTML5, CSS3 y Bootstrap | Construcción de la interfaz web. |
 | Acceso a datos | Entity Framework Core 9 | Consultas y persistencia de información. |
 | Base de datos | Microsoft SQL Server | Almacenamiento persistente. |
+| Caché en memoria | IMemoryCache de ASP.NET Core | Conservar temporalmente resultados de consultas frecuentes para reducir accesos repetidos a la base de datos. |
 | Diagramas | Mermaid | Documentación visual de la arquitectura. |
 
 Las versiones de las tecnologías se mantienen alineadas con las restricciones y el `README.md` del proyecto.
@@ -97,6 +119,22 @@ Los módulos propuestos son:
 ### 4.3. Servicios compartidos
 
 Incluyen las funciones comunes que puedan requerir los módulos, como autenticación, autorización, auditoría y coordinación de operaciones.
+
+#### Estrategia de caché en memoria
+
+Se propone incorporar `IMemoryCache`, proporcionado por ASP.NET Core, como mecanismo de almacenamiento temporal de datos consultados con frecuencia. El objetivo es reducir las consultas repetidas a Microsoft SQL Server y mejorar los tiempos de respuesta de las operaciones de lectura.
+
+El funcionamiento previsto será el siguiente:
+
+1. El servicio de aplicación solicita los datos al caché.
+2. Si existe una entrada válida, se devuelve el resultado almacenado.
+3. Si no existe una entrada válida, se consulta la información mediante Entity Framework Core 9 y Microsoft SQL Server.
+4. El resultado obtenido se almacena temporalmente en el caché y se devuelve al servicio solicitante.
+5. Las entradas tendrán un tiempo de expiración definido y deberán invalidarse o actualizarse cuando cambien los datos relacionados.
+
+Como primera aplicación, se propone evaluar el almacenamiento temporal de catálogos de programas sociales y otros datos de consulta frecuente que no contengan información personal sensible.
+
+Esta estrategia es una decisión arquitectónica propuesta y deberá implementarse y validarse mediante pruebas de rendimiento. El caché en memoria del servidor es independiente del almacenamiento local que se contempla para las capacidades PWA sin conexión.
 
 ### 4.4. Acceso a datos
 
