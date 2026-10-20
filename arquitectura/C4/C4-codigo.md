@@ -1,131 +1,130 @@
+# C4. Vista de código (UML conceptual)
 
-# C4 — Diagrama de Código
+## 1. Objetivo
 
-**Proyecto:** Sistema de Gestión de Programas Sociales de Huamanga  
-**Modelo:** C4 — Nivel 4: Código  
-**Propósito:** Representar las clases conceptuales y sus relaciones.
+Esta vista presenta una propuesta de organización de las clases principales del Sistema de Gestión de Programas Sociales de Huamanga. Complementa los diagramas C1, C2 y C3 mediante ejemplos de entidades del dominio, controladores, servicios y acceso a datos.
 
-## Diagrama UML de clases
+La solución propuesta utiliza C# sobre .NET 9, ASP.NET Core MVC 9, Entity Framework Core 9 y Microsoft SQL Server.
 
-```mermaid
+**Importante:** las clases, propiedades, métodos y relaciones mostrados son conceptuales. Deberán ajustarse cuando se desarrolle y valide el código fuente del sistema.
+
+## 2. Diagrama UML de clases
+
+```mermaid id="umlprog01"
 classDiagram
     direction TB
 
-    namespace Dominio {
-        class Beneficiario {
-            +int Id
-            +string DNI
-            +string Nombres
-            +string Apellidos
-            +bool Activo
-            +DateTime FechaRegistro
-        }
-
-        class Comite {
-            +int Id
-            +string Nombre
-            +string Ubicacion
-        }
-
-        class ProgramaSocial {
-            +int Id
-            +string Nombre
-            +string Descripcion
-        }
-
-        class Auditoria {
-            +int Id
-            +string Accion
-            +DateTime Fecha
-            +string Usuario
-        }
+    class Beneficiario {
+        +int Id
+        +string DNI
+        +string Nombres
+        +string Apellidos
+        +string Estado
+        +DateTime FechaRegistro
     }
 
-    namespace Aplicacion {
-        class BeneficiarioController {
-            +Index()
-            +Create()
-            +Edit()
-            +Details()
-        }
-
-        class BeneficiarioService {
-            +Registrar()
-            +Actualizar()
-            +Inactivar()
-        }
-
-        class ValidadorDuplicadosService {
-            +ValidarDNI()
-            +BuscarDuplicados()
-        }
-
-        class RevalidacionService {
-            +RevalidarBeneficiario()
-        }
-
-        class NotificacionService {
-            +EnviarNotificacion()
-        }
-
-        class ReporteService {
-            +GenerarReporte()
-            +ExportarExcel()
-            +ExportarPDF()
-        }
+    class Comite {
+        +int Id
+        +string Nombre
+        +string Ubicacion
     }
 
-    namespace Infraestructura {
-        class BeneficiarioRepository {
-            +ObtenerPorId()
-            +ObtenerPorDNI()
-            +Agregar()
-            +Actualizar()
-        }
-
-        class UnitOfWork {
-            +GuardarCambios()
-        }
-
-        class ApplicationDbContext {
-            +DbSet Beneficiarios
-            +DbSet Comites
-            +DbSet ProgramasSociales
-            +DbSet Auditorias
-        }
+    class ProgramaSocial {
+        +int Id
+        +string Nombre
+        +string Descripcion
+        +bool Activo
     }
 
-    BeneficiarioController --> BeneficiarioService : utiliza
-    BeneficiarioService --> ValidadorDuplicadosService : valida DNI
-    BeneficiarioService --> BeneficiarioRepository : consulta datos
-    BeneficiarioService --> UnitOfWork : confirma cambios
+    class Auditoria {
+        +int Id
+        +string Usuario
+        +string Operacion
+        +DateTime FechaHora
+        +string Detalle
+    }
 
-    RevalidacionService --> BeneficiarioRepository : consulta padrón
-    ReporteService --> BeneficiarioRepository : obtiene información
-    NotificacionService ..> Beneficiario : destinatario
+    class BeneficiarioController {
+        +Index()
+        +Details(int id)
+        +Create()
+        +Edit(int id)
+    }
 
-    BeneficiarioRepository --> ApplicationDbContext : accede a datos
-    UnitOfWork --> ApplicationDbContext : guarda cambios
+    class BeneficiarioService {
+        +ListarBeneficiarios()
+        +RegistrarBeneficiario()
+        +ValidarDNI()
+        +ActualizarEstado()
+    }
 
-    Comite "1" --> "0..*" Beneficiario : agrupa
-    ProgramaSocial "1" --> "0..*" Beneficiario : registra
-    Beneficiario "1" --> "0..*" Auditoria : historial
+    class ApplicationDbContext {
+        +DbSet~Beneficiario~ Beneficiarios
+        +DbSet~Comite~ Comites
+        +DbSet~ProgramaSocial~ ProgramasSociales
+        +DbSet~Auditoria~ Auditorias
+        +SaveChangesAsync()
+    }
 
-    classDef domain fill:#D6EAF8,stroke:#2874A6,color:#154360
-    classDef application fill:#D5F5E3,stroke:#239B56,color:#145A32
-    classDef infrastructure fill:#FCF3CF,stroke:#B7950B,color:#7D6608
+    class SQLServer {
+        <<Base de datos>>
+    }
+
+    BeneficiarioController --> BeneficiarioService : coordina
+    BeneficiarioService --> ApplicationDbContext : consulta y guarda
+
+    ApplicationDbContext --> Beneficiario : persiste
+    ApplicationDbContext --> Comite : persiste
+    ApplicationDbContext --> ProgramaSocial : persiste
+    ApplicationDbContext --> Auditoria : persiste
+
+    ApplicationDbContext --> SQLServer : mediante EF Core 9
+
+    Beneficiario "*" --> "1" Comite : pertenece a
+    Beneficiario "*" --> "*" ProgramaSocial : participa en
 ```
 
-## Descripción
+## 3. Descripción de las clases
 
-El modelo divide las clases en tres grupos conceptuales:
+| Clase | Responsabilidad |
+|---|---|
+| Beneficiario | Representa a una persona registrada en el sistema. |
+| Comite | Representa un comité asociado a la gestión de beneficiarios. |
+| ProgramaSocial | Representa un programa social administrado por el sistema. |
+| Auditoria | Representa información de seguimiento de operaciones relevantes. |
+| BeneficiarioController | Atiende las solicitudes relacionadas con la gestión de beneficiarios desde la interfaz MVC. |
+| BeneficiarioService | Agrupa las operaciones y reglas de negocio relacionadas con los beneficiarios. |
+| ApplicationDbContext | Define el acceso de Entity Framework Core a las entidades y a la base de datos. |
+| SQLServer | Representa el motor de base de datos Microsoft SQL Server. |
 
-- **Dominio:** contiene las entidades principales del negocio, como beneficiarios, comités, programas sociales y auditoría.
-- **Aplicación:** representa los controladores y servicios que coordinan las operaciones del sistema.
-- **Infraestructura:** representa el acceso a datos mediante repositorios, Unit of Work y Entity Framework Core.
+## 4. Relaciones del modelo
 
-Las relaciones muestran cómo los controladores utilizan servicios, los servicios acceden a los repositorios y los elementos de persistencia interactúan con el contexto de base de datos.
+1. El controlador de beneficiarios coordina las operaciones mediante el servicio de aplicación.
+2. El servicio consulta y persiste la información utilizando `ApplicationDbContext`.
+3. `ApplicationDbContext` utiliza Entity Framework Core 9 para acceder a Microsoft SQL Server.
+4. El modelo propone que un beneficiario esté asociado a un comité. Esta relación deberá confirmarse con las reglas reales del negocio.
+5. La participación de un beneficiario en uno o varios programas sociales se representa como una relación conceptual. En la implementación podría requerir una entidad intermedia para registrar fechas, estado y otros datos de participación.
+6. Las operaciones relevantes pueden generar registros de auditoría conforme a los requisitos de seguridad y trazabilidad.
 
-## Consideración importante
+## 5. Tecnologías relacionadas
 
-Los nombres, atributos, métodos y relaciones de este diagrama son ilustrativos. Antes de presentar el nivel C4 como una representación exacta del código, deben verificarse los archivos `.cs` del repositorio y ajustarse las clases a la implementación real.
+- **Lenguaje:** C#.
+- **Plataforma:** .NET 9.
+- **Framework web:** ASP.NET Core MVC 9.
+- **Acceso a datos:** Entity Framework Core 9.
+- **Base de datos:** Microsoft SQL Server.
+- **Organización:** monolito modular.
+
+## 6. Consideraciones de implementación
+
+- Los nombres y métodos son ilustrativos; no implican que las clases ya existan en el repositorio.
+- Los controladores deben limitarse a gestionar solicitudes y coordinar los servicios, evitando concentrar toda la lógica de negocio.
+- Las reglas de duplicidad del DNI deberán definirse y validarse antes de implementarse.
+- Las relaciones entre beneficiarios, comités y programas sociales deberán verificarse con los requisitos funcionales.
+- El registro de auditoría deberá definir qué operaciones registrar, qué datos conservar y quién puede consultar el historial.
+- El acceso a datos se representa mediante Entity Framework Core 9; no se impone el uso de Repository o Unit of Work.
+- Microsoft SQL Server es la base de datos seleccionada. No se presupone que esté alojada en Azure.
+
+## 7. Alcance de esta vista
+
+Este diagrama es una representación conceptual del código propuesto, no una descripción de clases verificadas en una implementación existente. Cuando se desarrolle el sistema, deberá actualizarse para reflejar las clases, interfaces, propiedades y relaciones reales.

@@ -1,95 +1,195 @@
-﻿# Estilo Arquitectónico
+﻿# Estilo arquitectónico del sistema
 
-## 1. Estilo seleccionado
+## 1. Introducción
 
-El Sistema de Gestión de Programas Sociales de Huamanga utilizará como estilo principal un **monolito modular**, organizado mediante el patrón MVC de ASP.NET Core.
+El Sistema de Gestión de Programas Sociales de Huamanga se plantea como una aplicación web que permite gestionar información de beneficiarios, validar registros, consultar el padrón y generar reportes para el personal municipal autorizado.
 
-En este enfoque, los módulos se organizan dentro de una aplicación principal y comparten la infraestructura necesaria para su funcionamiento. La separación por módulos busca mantener responsabilidades claras y facilitar el mantenimiento.
+Para organizar la solución se propone un estilo de **monolito modular**, utilizando el patrón arquitectónico MVC (Modelo-Vista-Controlador) para estructurar la interacción entre los usuarios y la aplicación.
 
-## 2. Características principales
+Este documento describe la organización arquitectónica propuesta. La implementación y validación técnica están pendientes.
 
-- Una aplicación principal desplegable como una unidad.
-- Separación funcional en módulos.
-- Uso de MVC para organizar la presentación y el procesamiento de solicitudes.
-- Acceso a datos mediante Entity Framework Core 9.
-- Persistencia en Microsoft SQL Server.
-- Uso de inyección de dependencias para gestionar los servicios.
+## 2. Estilo arquitectónico seleccionado: monolito modular
 
-## 3. Organización por capas
+El monolito modular consiste en una aplicación que se despliega como una unidad, pero que organiza sus funcionalidades en módulos con responsabilidades diferenciadas.
 
-| Capa | Responsabilidad |
+Para este proyecto, los módulos funcionales se agrupan en:
+
+- Gestión de beneficiarios.
+- Detección de duplicados.
+- Revalidación periódica.
+- Importación y validación de datos históricos.
+- Reportes y cobertura.
+- Gestión de notificaciones.
+- Servicios compartidos de autenticación, autorización y auditoría.
+
+Esta organización permite separar las responsabilidades del sistema sin tener que implementar y desplegar cada módulo como un servicio independiente.
+
+### 2.1. Justificación
+
+Se propone este estilo por las siguientes razones:
+
+1. Reduce la complejidad inicial de despliegue y administración.
+2. Facilita la organización de las funcionalidades por módulos.
+3. Permite centralizar las operaciones de persistencia en una aplicación.
+4. Favorece el mantenimiento y la evolución gradual del sistema.
+5. Se ajusta al alcance académico y a las necesidades identificadas en los requisitos.
+
+## 3. Patrón MVC
+
+El patrón Modelo-Vista-Controlador organiza la aplicación en tres responsabilidades principales.
+
+| Elemento | Responsabilidad |
 |---|---|
-| Presentación | Vistas Razor, controladores y comunicación con el usuario. |
-| Aplicación | Coordinación de casos de uso y servicios del sistema. |
-| Dominio | Entidades y reglas de negocio. |
-| Infraestructura | Persistencia, Entity Framework Core y comunicación con servicios externos. |
+| Modelo | Representa los datos y conceptos del dominio que utiliza el sistema. |
+| Vista | Presenta la información y los formularios mediante Razor (`.cshtml`). |
+| Controlador | Recibe las solicitudes, coordina las operaciones y devuelve las respuestas correspondientes. |
 
-Esta organización representa una separación lógica de responsabilidades. No significa que necesariamente existan cuatro proyectos físicos independientes.
+La lógica de negocio se organizará en servicios de aplicación cuando sea necesario, evitando concentrar todas las reglas en los controladores.
 
-## 4. Módulos funcionales previstos
+## 4. Tecnologías propuestas
 
-1. Gestión de usuarios y acceso.
-2. Registro y actualización de beneficiarios.
-3. Gestión de comités y programas sociales.
-4. Validación de registros duplicados.
-5. Revalidación periódica de beneficiarios.
-6. Reportes y cobertura.
-7. Importación y depuración de datos.
-8. Auditoría de operaciones.
+| Elemento | Tecnología |
+|---|---|
+| Lenguaje | C# |
+| Plataforma | .NET 9 |
+| Framework web | ASP.NET Core MVC 9 |
+| Interfaz | Razor, HTML5, CSS3 y Bootstrap |
+| Acceso a datos | Entity Framework Core 9 |
+| Base de datos | Microsoft SQL Server |
+| Diagramas | Mermaid |
 
-Los módulos definitivos deberán ajustarse al alcance funcional y a la implementación del proyecto.
+Las tecnologías y versiones deben mantenerse alineadas con el `README.md` y con el archivo `analisis-de-sistema/05-restricciones.md`.
 
+## 5. Organización lógica de la arquitectura
 
-## 5. Diagrama del estilo arquitectónico
+La solución se organiza en cuatro áreas lógicas:
 
-La solución utiliza una arquitectura en capas organizada como monolito modular. La presentación, la lógica de negocio y el acceso a datos forman parte de la aplicación ASP.NET Core 10 MVC.
+### 5.1. Presentación
 
-```mermaid
+Contiene los controladores MVC y las vistas Razor que permiten al personal municipal interactuar con la aplicación.
+
+### 5.2. Módulos funcionales
+
+Agrupa las funcionalidades de registro y consulta de beneficiarios, validación de duplicados, revalidación, importación de datos, reportes y notificaciones.
+
+### 5.3. Servicios compartidos
+
+Incluye las funciones que pueden utilizar distintos módulos, como autenticación, autorización, auditoría y coordinación de operaciones.
+
+### 5.4. Acceso a datos
+
+Utiliza Entity Framework Core 9 para realizar las operaciones de consulta y persistencia sobre Microsoft SQL Server.
+
+Los patrones Repository y Unit of Work no se consideran obligatorios en esta propuesta. Su uso deberá evaluarse cuando exista una implementación concreta y se pueda justificar su beneficio.
+
+## 6. Diagrama del estilo arquitectónico
+
+```mermaid id="estilo_modular_mvc"
 flowchart TB
-    U["Usuarios<br/>Dirigentes y personal municipal autorizado"]
+    USR["Personal municipal autorizado"]
 
-    subgraph APP["MONOLITO MODULAR - ASP.NET CORE 10 MVC"]
-        subgraph PRESENTACION["CAPA DE PRESENTACIÓN"]
-            V["Vistas Razor<br/>HTML5, CSS3 y Bootstrap"]
-            C["Controladores MVC"]
+    subgraph SISTEMA["Monolito modular · ASP.NET Core MVC 9"]
+        direction TB
+
+        subgraph PRESENTACION["Presentación · MVC"]
+            CTRL["Controladores"]
+            VIEW["Vistas Razor"]
         end
 
-        subgraph NEGOCIO["CAPA DE LÓGICA DE NEGOCIO"]
-            S["Servicios de aplicación y dominio<br/>Validaciones, duplicados,<br/>revalidación, staging y reportes"]
-            N["Servicio de notificaciones"]
+        subgraph FUNCIONAL["Módulos funcionales"]
+            BEN["Gestión de beneficiarios"]
+            DUP["Detección de duplicados"]
+            REVA["Revalidación periódica"]
+            IMP["Importación de datos"]
+            REP["Reportes y cobertura"]
+            NOTI["Notificaciones"]
         end
 
-        subgraph DATOS["CAPA DE ACCESO A DATOS"]
-            D["Entity Framework Core 10"]
+        subgraph COMPARTIDOS["Servicios compartidos"]
+            AUTH["Autenticación y autorización"]
+            AUD["Auditoría"]
+            SERV["Servicios de aplicación"]
+        end
+
+        subgraph PERSISTENCIA["Persistencia"]
+            EF["Entity Framework Core 9"]
         end
     end
 
     DB[("Microsoft SQL Server")]
-    EXT["Proveedor externo<br/>SMS / WhatsApp"]
-    PWA["Capacidades PWA<br/>Offline y sincronización pendientes de validar"]
 
-    U --> V
-    V --> C
-    C --> S
-    S --> D
-    D --> DB
-    S --> N
-    N -.->|"Cuando corresponda"| EXT
-    V -.-> PWA
+    USR --> VIEW
+    VIEW --> CTRL
+
+    CTRL --> BEN
+    CTRL --> DUP
+    CTRL --> REVA
+    CTRL --> IMP
+    CTRL --> REP
+    CTRL --> NOTI
+
+    CTRL --> AUTH
+
+    BEN --> SERV
+    DUP --> SERV
+    REVA --> SERV
+    IMP --> SERV
+    REP --> SERV
+    NOTI --> SERV
+
+    SERV --> AUD
+    SERV --> EF
+    EF --> DB
+
+    classDef actor fill:#E8EAF6,stroke:#3949AB,color:#1A237E
+    classDef presentacion fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
+    classDef funcional fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef compartidos fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
+    classDef persistencia fill:#FFF3E0,stroke:#F57C00,color:#E65100
+
+    class USR actor
+    class CTRL,VIEW presentacion
+    class BEN,DUP,REVA,IMP,REP,NOTI funcional
+    class AUTH,AUD,SERV compartidos
+    class EF,DB persistencia
 ```
 
-**Descripción:** las vistas presentan la interfaz, los controladores coordinan las solicitudes, los servicios aplican las reglas del negocio y Entity Framework Core 10 permite acceder a Microsoft SQL Server. Las notificaciones se gestionan mediante un servicio de la aplicación y un proveedor externo. Las capacidades offline quedan sujetas a implementación y pruebas.
+## 7. Consideraciones de conectividad
 
-## 6. Ventajas
+El sistema contempla evaluar capacidades PWA para apoyar determinadas operaciones cuando no exista conexión a Internet.
 
-- Menor complejidad de despliegue que una solución distribuida en múltiples servicios.
-- Organización de las funcionalidades por responsabilidades.
-- Facilidad para compartir componentes y servicios.
-- Adecuación para un proyecto que necesita evolucionar progresivamente.
-- Posibilidad de mantener una estructura clara sin introducir complejidad innecesaria.
+El uso sin conexión requiere definir qué operaciones estarán disponibles, cómo se almacenarán los datos localmente, cómo se sincronizarán y cómo se resolverán los conflictos. Estas capacidades deberán implementarse y probarse antes de considerarse disponibles.
 
-## 7. Consideraciones
+## 8. Integraciones externas
 
-El monolito modular no implica que todas las funcionalidades estén terminadas. La PWA, la sincronización sin conexión y las integraciones externas deberán verificarse durante el desarrollo.
+Se contempla la posibilidad de integrar un servicio de SMS o WhatsApp para enviar notificaciones a los beneficiarios. La elección del proveedor y los detalles de integración quedan pendientes.
 
-La arquitectura se considera una propuesta documentada y deberá contrastarse con el código fuente cuando la implementación esté disponible.
+Los archivos históricos pueden utilizarse como fuente para importar y validar información. RENIEC y SISFOH no se consideran integraciones confirmadas de la primera versión.
+
+## 9. Relación con el modelo C4
+
+La organización del sistema se complementa con los diagramas del directorio `arquitectura/C4/`:
+
+- C1 representa el contexto del sistema.
+- C2 representa sus contenedores.
+- C3 representa sus componentes internos.
+- La vista UML conceptual presenta ejemplos de clases y relaciones.
+
+Los diagramas deben ser coherentes entre sí y con los requisitos funcionales, los atributos de calidad y las restricciones del proyecto.
+
+## 10. Conclusión
+
+El monolito modular con MVC permite organizar el sistema en responsabilidades claras y mantener una solución de complejidad controlada. La separación entre presentación, módulos funcionales, servicios compartidos y persistencia proporciona una base para el desarrollo y mantenimiento.
+
+La arquitectura descrita es una propuesta que deberá contrastarse con la implementación, las pruebas y las decisiones técnicas definitivas.
+```
+
+## Verificación
+
+Después de pegarlo y guardar con `Ctrl + S`:
+
+- Comprueba que no haya referencias a `.NET 10`, `ASP.NET Core 10` o `EF Core 10`.
+- Verifica que el diagrama se visualice correctamente en la vista previa de Markdown.
+- Confirma que el estilo siga siendo **monolito modular con MVC**, no microservicios.
+
+El siguiente paso será revisar los documentos de análisis para asegurarnos de que las tecnologías y las decisiones arquitectónicas coincidan con los requisitos. Así podremos terminar las correcciones antes de realizar el único commit.

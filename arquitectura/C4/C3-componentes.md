@@ -1,90 +1,159 @@
-﻿
-## C4 - Nivel 3: Diagrama de Componentes
+﻿# C3. Diagrama de componentes
+
+## 1. Objetivo
+
+El diagrama de componentes representa la organización interna de la aplicación web del Sistema de Gestión de Programas Sociales de Huamanga. Se muestran los componentes de presentación, los módulos funcionales, los servicios compartidos y el acceso a datos.
+
+La solución utiliza una arquitectura de monolito modular desarrollada con ASP.NET Core MVC 9, Entity Framework Core 9 y Microsoft SQL Server.
+
+Este diagrama es una propuesta arquitectónica. Los componentes representados deberán validarse durante el desarrollo del sistema.
+
+## 2. Diagrama de componentes
 
 ```mermaid
 flowchart TB
-    usuario["Dirigente de comitÃ© / Personal municipal"]
+    USR["Personal municipal autorizado"]
 
-    subgraph aplicacion["APLICACIÃ“N ASP.NET CORE MVC"]
-        direction TB
-
-        subgraph presentacion["CAPA DE PRESENTACIÃ“N"]
-            direction LR
-            vistas["Vistas Razor"]
-            controladores["Controladores MVC"]
-            vistas --> controladores
-        end
-
-        subgraph funcional["MÃ“DULOS FUNCIONALES"]
-            direction TB
-
-            subgraph fila1[" "]
-                direction LR
-                m1["01. AutenticaciÃ³n<br/>y autorizaciÃ³n"]
-                m2["02. Registro<br/>y padrÃ³n"]
-                m3["03. DetecciÃ³n<br/>de duplicados"]
-                m4["04. RevalidaciÃ³n<br/>periÃ³dica"]
-            end
-
-            subgraph fila2[" "]
-                direction LR
-                m5["05. Notificaciones"]
-                m6["06. Cobertura<br/>y reportes"]
-                m7["07. ImportaciÃ³n<br/>y depuraciÃ³n"]
-            end
-        end
-
-        subgraph soporte["SERVICIOS COMPARTIDOS"]
-            direction LR
-            auditoria["Servicio de auditorÃ­a"]
-            datos["Acceso a datos<br/>Entity Framework Core"]
-        end
-
-        controladores --> m1
-        controladores --> m2
-        controladores --> m3
-        controladores --> m4
-        controladores --> m5
-        controladores --> m6
-        controladores --> m7
-
-        m1 --> datos
-        m2 --> datos
-        m3 --> datos
-        m4 --> datos
-        m5 --> datos
-        m6 --> datos
-        m7 --> datos
-
-        m2 -.-> auditoria
-        m4 -.-> auditoria
-        m7 -.-> auditoria
+    subgraph PRESENTACION["1. Capa de presentación"]
+        CTRL["Controladores MVC"]
+        VIEW["Vistas Razor (.cshtml)"]
     end
 
-    bd[("Microsoft SQL Server")]
-    proveedor["Proveedor SMS / WhatsApp"]
+    subgraph MODULOS["2. Módulos funcionales"]
+        direction TB
 
-    usuario --> vistas
-    datos --> bd
-    m5 --> proveedor
+        subgraph GESTION["Gestión de beneficiarios"]
+            REG["Registro y actualización"]
+            PAD["Consulta del padrón"]
+            EST["Estado del beneficiario"]
+        end
 
-    classDef actor fill:#D6EAF8,stroke:#2874A6,color:#154360,stroke-width:1.5px
-    classDef presentacion fill:#D6EAF8,stroke:#2874A6,color:#154360,stroke-width:1.5px
-    classDef modulo fill:#D5F5E3,stroke:#239B56,color:#145A32,stroke-width:1.5px
-    classDef soporte fill:#FCF3CF,stroke:#B7950B,color:#7D6608,stroke-width:1.5px
-    classDef externo fill:#E8DAEF,stroke:#7D3C98,color:#512E5F,stroke-width:1.5px
+        subgraph VALIDACION["Validación de información"]
+            DUP["Detección de DNI duplicado"]
+            REVA["Revalidación periódica"]
+            IMP["Importación y validación de datos históricos"]
+        end
 
-    class usuario actor
-    class vistas,controladores presentacion
-    class m1,m2,m3,m4,m5,m6,m7 modulo
-    class auditoria,datos soporte
-    class bd,proveedor externo
+        subgraph CONSULTA["Consultas y comunicación"]
+            REP["Reportes y cobertura"]
+            NOTI["Gestión de notificaciones"]
+        end
+    end
 
-    style aplicacion fill:#FFFFFF,stroke:#566573,stroke-width:2px
-    style presentacion fill:#EBF5FB,stroke:#5DADE2,stroke-width:1px
-    style funcional fill:#EAFAF1,stroke:#58D68D,stroke-width:1px
-    style soporte fill:#FEF9E7,stroke:#D4AC0D,stroke-width:1px
-    style fila1 fill:transparent,stroke:transparent
-    style fila2 fill:transparent,stroke:transparent
+    subgraph COMPARTIDOS["3. Servicios compartidos"]
+        AUTH["Autenticación y autorización"]
+        AUD["Auditoría de operaciones"]
+        SERV["Servicios de aplicación"]
+    end
+
+    subgraph DATOS["4. Acceso a datos"]
+        CTX["DbContext de Entity Framework Core 9"]
+        SQL[("Microsoft SQL Server")]
+    end
+
+    HIST["Archivos históricos<br/>Excel y registros disponibles"]
+    MSG["Servicio externo de SMS / WhatsApp"]
+
+    USR --> VIEW
+    VIEW --> CTRL
+
+    CTRL --> REG
+    CTRL --> PAD
+    CTRL --> EST
+    CTRL --> DUP
+    CTRL --> REVA
+    CTRL --> IMP
+    CTRL --> REP
+    CTRL --> NOTI
+
+    CTRL --> AUTH
+
+    REG --> SERV
+    PAD --> SERV
+    EST --> SERV
+    DUP --> SERV
+    REVA --> SERV
+    IMP --> SERV
+    REP --> SERV
+    NOTI --> SERV
+
+    SERV --> AUD
+    SERV --> CTX
+    CTX --> SQL
+
+    IMP -. "Lee y valida registros" .-> HIST
+    NOTI -. "Solicita el envío de mensajes" .-> MSG
+
+    classDef actor fill:#E8EAF6,stroke:#3949AB,color:#1A237E
+    classDef presentacion fill:#E3F2FD,stroke:#1976D2,color:#0D47A1
+    classDef gestion fill:#E8F5E9,stroke:#388E3C,color:#1B5E20
+    classDef compartidos fill:#F3E5F5,stroke:#8E24AA,color:#4A148C
+    classDef datos fill:#FFF3E0,stroke:#F57C00,color:#E65100
+    classDef externo fill:#ECEFF1,stroke:#546E7A,color:#263238
+
+    class USR actor
+    class CTRL,VIEW presentacion
+    class REG,PAD,EST,DUP,REVA,IMP,REP,NOTI gestion
+    class AUTH,AUD,SERV compartidos
+    class CTX,SQL datos
+    class HIST,MSG externo
 ```
 
+## 3. Descripción de los componentes
+
+| Componente | Responsabilidad |
+|---|---|
+| Controladores MVC | Reciben las solicitudes del usuario y coordinan las operaciones de la aplicación. |
+| Vistas Razor | Presentan formularios, tablas, mensajes y resultados en la interfaz web. |
+| Registro y actualización | Gestiona el registro y la modificación de los datos de los beneficiarios. |
+| Consulta del padrón | Permite consultar los beneficiarios registrados. |
+| Estado del beneficiario | Gestiona los estados definidos para los beneficiarios según las reglas del sistema. |
+| Detección de DNI duplicado | Comprueba si un documento de identidad ya se encuentra registrado y permite advertir posibles duplicados. |
+| Revalidación periódica | Apoya la revisión periódica de la información de los beneficiarios. |
+| Importación y validación de datos históricos | Permite preparar, validar e importar información procedente de archivos existentes. |
+| Reportes y cobertura | Organiza consultas, reportes y datos destinados a visualizar la cobertura de los programas sociales. |
+| Gestión de notificaciones | Coordina las solicitudes de notificación a través de una integración externa que deberá definirse. |
+| Autenticación y autorización | Gestiona el acceso y los permisos según el rol del usuario. |
+| Auditoría de operaciones | Registra las operaciones relevantes para facilitar su seguimiento. |
+| Servicios de aplicación | Coordinan las reglas y operaciones compartidas por los módulos. |
+| DbContext de Entity Framework Core 9 | Gestiona las consultas y operaciones de persistencia hacia Microsoft SQL Server. |
+| Microsoft SQL Server | Almacena los datos persistentes del sistema. |
+
+## 4. Organización modular
+
+Los componentes funcionales se agrupan en tres áreas principales:
+
+### 4.1. Gestión de beneficiarios
+
+Comprende el registro y actualización, la consulta del padrón y la gestión del estado de los beneficiarios.
+
+### 4.2. Validación de información
+
+Agrupa la detección de documentos duplicados, la revalidación periódica y la importación de datos históricos. Su objetivo es contribuir a la calidad y consistencia de la información.
+
+### 4.3. Consultas y comunicación
+
+Incluye la generación de reportes, la información de cobertura y la coordinación de notificaciones mediante servicios externos.
+
+Los servicios de autenticación, auditoría y aplicación son compartidos por los módulos cuando corresponda.
+
+## 5. Tecnologías y decisiones arquitectónicas
+
+- **Framework web:** ASP.NET Core MVC 9.
+- **Lenguaje:** C# sobre .NET 9.
+- **Interfaz:** Razor, HTML5, CSS3 y Bootstrap.
+- **Acceso a datos:** Entity Framework Core 9.
+- **Base de datos:** Microsoft SQL Server.
+- **Estilo arquitectónico:** monolito modular.
+- **Repository y Unit of Work:** no se presentan como componentes obligatorios; su conveniencia deberá evaluarse durante la implementación.
+- **Integración de mensajería:** SMS o WhatsApp están considerados como una posibilidad, pero el proveedor aún debe definirse.
+- **Integraciones institucionales:** RENIEC y SISFOH no se consideran dependencias de la primera versión.
+
+## 6. Consideraciones
+
+1. Los módulos forman parte de una misma aplicación; no representan microservicios independientes.
+2. La detección de DNI duplicado debe coordinarse con las reglas de negocio para gestionar coincidencias y advertencias.
+3. Las operaciones importantes deberán registrar los datos de auditoría que se definan en los requisitos.
+4. La importación de información histórica deberá validar los registros antes de incorporarlos al padrón.
+5. Las capacidades de uso sin conexión y sincronización se describen en el diagrama de contenedores C2. Su implementación deberá contemplar la resolución de conflictos y la protección de los datos locales.
+6. Los componentes de este diagrama son conceptuales y deberán ajustarse a las clases, servicios y módulos que se desarrollen realmente.

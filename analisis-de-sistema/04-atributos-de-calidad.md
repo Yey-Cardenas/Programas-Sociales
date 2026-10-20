@@ -1,48 +1,197 @@
 # Atributos de calidad
 
-## Escenario general
+## 1. Objetivo
 
-Un dirigente de comité registra a varios beneficiarios en una zona con baja cobertura de internet. Al recuperar la conexión, su aplicativo sincroniza los datos y el sistema debe validar los DNI contra todo el padrón municipal, mientras el personal de la Sub Gerencia consulta el mapa de cobertura. Los datos son personales y sensibles, y el sistema opera durante todo el año.
+Este documento identifica los atributos de calidad relevantes para el Sistema de Gestión de Programas Sociales de Huamanga. Estos atributos permiten orientar las decisiones arquitectónicas y establecer criterios para evaluar el comportamiento esperado del sistema.
 
+Los valores indicados son objetivos propuestos. Su cumplimiento deberá comprobarse mediante pruebas durante el desarrollo y la validación de la solución.
 
-## Escenarios de calidad
+## 2. Atributos de calidad identificados
 
-| ID | Atributo de calidad | Escenario y criterio verificable | Origen |
-|---|---|---|---|
-| AC01 | Disponibilidad y continuidad | Se propone una disponibilidad mensual mínima del 99%. El registro sin conexión se considera un requisito independiente y deberá probarse verificando la conservación de los datos y su sincronización posterior. | RNF-01 |
-| AC02 | Rendimiento | La validación de duplicados por DNI deberá responder en menos de 0.5 segundos en las condiciones de carga definidas para las pruebas. Se registrará el tiempo de respuesta y el número de usuarios concurrentes. | RNF-02 |
-| AC03 | Usabilidad | El formulario de registro tendrá como máximo cinco campos obligatorios, siempre que se mantenga la información necesaria para validar el registro. | RNF-03 |
-| AC04 | Seguridad y privacidad | Los datos personales estarán protegidos mediante comunicación cifrada, autorización por roles y controles de acceso. Las copias de seguridad también deberán contar con protección de acceso. | RNF-04 |
-| AC05 | Compatibilidad | Se definirá y probará una matriz de navegadores y dispositivos móviles compatibles. Android 8+ se mantendrá como objetivo de compatibilidad que deberá validarse con las tecnologías PWA seleccionadas. | RNF-05 |
-| AC06 | Auditabilidad | Las modificaciones relevantes deberán registrar usuario, fecha, acción y resultado. Cuando corresponda, también se registrarán el motivo y los valores modificados. | RNF-06 |
-| AC07 | Capacidad | El sistema deberá gestionar al menos 15,000 beneficiarios sin superar los umbrales de rendimiento definidos en las pruebas de carga. | RNF-07 |
-| AC08 | Mantenibilidad | La incorporación de un nuevo programa social deberá poder realizarse sin rediseñar la totalidad del sistema, respetando la separación modular. | RNF-08 |
-| AC09 | Respaldo y recuperación | Se propone generar copias de seguridad diarias. Se deberá definir el periodo de conservación y comprobar mediante una prueba que los datos puedan restaurarse. | RNF-09 |
+### AC-01. Disponibilidad
 
+**Descripción:** El sistema deberá estar disponible para los usuarios autorizados durante las operaciones habituales de gestión de los programas sociales.
 
+**Escenario de calidad:** Cuando el personal municipal necesite registrar o consultar información, el sistema deberá encontrarse operativo de acuerdo con las condiciones del entorno de despliegue.
 
-## Escenarios con formato estímulo – respuesta – medida
+**Métrica propuesta:** Disponibilidad mensual mínima del 99 %, considerando los periodos de mantenimiento previamente definidos.
 
-### AC02 – Rendimiento
+**Decisión arquitectónica relacionada:** Definir un entorno de despliegue compatible con ASP.NET Core 9 y procedimientos de recuperación ante incidentes.
 
-| Elemento | Descripción |
+**Prioridad:** Alta.
+
+**Validación:** Medir los periodos de disponibilidad e interrupción una vez definido el entorno de despliegue.
+
+### AC-02. Rendimiento
+
+**Descripción:** Las operaciones principales del sistema deberán responder en un tiempo adecuado para facilitar el trabajo del personal municipal.
+
+**Escenario de calidad:** Cuando un usuario registre un beneficiario, el sistema deberá comprobar si existe un posible registro duplicado y presentar el resultado oportunamente.
+
+**Métrica propuesta:** Tiempo de respuesta inferior a 0,5 segundos para la validación de duplicados, bajo condiciones de prueba definidas.
+
+**Decisión arquitectónica relacionada:** Optimizar las consultas realizadas mediante Entity Framework Core 9 y Microsoft SQL Server. Evaluar índices y restricciones de integridad según las reglas del negocio.
+
+**Prioridad:** Alta.
+
+**Validación:** Ejecutar pruebas de rendimiento con datos representativos, incluyendo un padrón de referencia de hasta 15 000 beneficiarios. Documentar el entorno, la concurrencia y los tiempos obtenidos.
+
+### AC-03. Facilidad de uso
+
+**Descripción:** La interfaz deberá permitir que el personal municipal realice las operaciones habituales de manera comprensible y ordenada.
+
+**Escenario de calidad:** Cuando un usuario registre o actualice información, deberá identificar fácilmente los campos obligatorios, los errores y las acciones disponibles.
+
+**Métrica propuesta:** Procurar que el formulario de registro tenga como máximo cinco campos obligatorios, siempre que las reglas del negocio lo permitan.
+
+**Decisión arquitectónica relacionada:** Utilizar ASP.NET Core MVC 9, Razor, HTML5, CSS3 y Bootstrap para organizar formularios y vistas consistentes.
+
+**Prioridad:** Media-alta.
+
+**Validación:** Revisar los formularios y realizar pruebas de uso con usuarios representativos.
+
+### AC-04. Seguridad y privacidad
+
+**Descripción:** El sistema deberá proteger la información personal de los beneficiarios y restringir el acceso a las funciones según las responsabilidades de cada usuario.
+
+**Escenario de calidad:** Cuando una persona intente acceder a una función restringida, el sistema deberá comprobar su autenticación y los permisos correspondientes antes de permitir la operación.
+
+**Criterios propuestos:**
+
+- Autenticación para las funciones que requieran acceso restringido.
+- Autorización basada en roles y permisos.
+- Protección de las comunicaciones mediante HTTPS en los entornos desplegados.
+- Almacenamiento seguro de credenciales.
+- Protección de la información personal y limitación de accesos.
+- Ausencia de contraseñas, claves y otros secretos en el repositorio.
+
+**Decisión arquitectónica relacionada:** Definir los mecanismos de autenticación, autorización, validación y protección de datos de acuerdo con los requisitos del sistema.
+
+**Prioridad:** Alta.
+
+**Validación:** Revisar los permisos y realizar pruebas de acceso autorizado y no autorizado.
+
+### AC-05. Compatibilidad y funcionamiento en distintos dispositivos
+
+**Descripción:** El sistema deberá ofrecer una experiencia de uso adecuada en los navegadores y dispositivos definidos para el proyecto.
+
+**Escenario de calidad:** Cuando el personal municipal acceda desde un equipo de escritorio o un dispositivo móvil compatible, deberá poder utilizar las funciones disponibles sin problemas de visualización que impidan su operación.
+
+**Métrica propuesta:** Establecer una matriz de compatibilidad que incluya los navegadores y dispositivos que se decida soportar. Considerar Android 8 o superior como objetivo inicial sujeto a validación.
+
+**Decisión arquitectónica relacionada:** Diseñar una interfaz adaptable y evaluar las capacidades PWA previstas para el sistema.
+
+**Prioridad:** Media-alta.
+
+**Validación:** Ejecutar pruebas de navegación, visualización y formularios en los dispositivos y navegadores seleccionados.
+
+### AC-06. Trazabilidad y auditoría
+
+**Descripción:** El sistema deberá permitir revisar las operaciones relevantes efectuadas sobre la información de los beneficiarios.
+
+**Escenario de calidad:** Cuando un usuario autorizado realice una modificación que deba auditarse, el sistema deberá conservar información suficiente para identificar la operación y su responsable.
+
+**Criterio propuesto:** Registrar, según corresponda, el usuario, la fecha y hora, el tipo de operación y una referencia al registro afectado.
+
+**Decisión arquitectónica relacionada:** Definir un mecanismo de auditoría integrado con los módulos funcionales y con acceso restringido.
+
+**Prioridad:** Alta.
+
+**Validación:** Ejecutar operaciones de prueba y comprobar la integridad y accesibilidad de los registros de auditoría.
+
+### AC-07. Capacidad de crecimiento
+
+**Descripción:** El sistema deberá poder gestionar el crecimiento del padrón de beneficiarios sin requerir una modificación completa de su arquitectura.
+
+**Escenario de calidad:** Cuando aumente la cantidad de beneficiarios registrados, las operaciones principales deberán continuar cumpliendo los objetivos de rendimiento establecidos para el proyecto.
+
+**Métrica propuesta:** Considerar un padrón de referencia de hasta 15 000 beneficiarios para las pruebas iniciales.
+
+**Decisión arquitectónica relacionada:** Organizar las funcionalidades mediante un monolito modular y optimizar el acceso a los datos almacenados en Microsoft SQL Server.
+
+**Prioridad:** Alta.
+
+**Validación:** Ejecutar pruebas con diferentes volúmenes de datos y revisar el comportamiento de las consultas principales.
+
+### AC-08. Mantenibilidad y evolución
+
+**Descripción:** La organización del sistema deberá facilitar la corrección de errores, el mantenimiento y la incorporación de nuevas funcionalidades.
+
+**Escenario de calidad:** Cuando se requiera modificar un módulo o incorporar una funcionalidad relacionada con un programa social, los cambios deberán realizarse procurando no afectar innecesariamente a los demás módulos.
+
+**Criterio propuesto:** Mantener responsabilidades diferenciadas, dependencias controladas y una estructura de código comprensible.
+
+**Decisión arquitectónica relacionada:** Utilizar un monolito modular con ASP.NET Core MVC 9 y separar las responsabilidades de presentación, lógica de negocio y acceso a datos.
+
+**Prioridad:** Alta.
+
+**Validación:** Revisar la estructura del proyecto y comprobar que los cambios no afecten las funciones existentes mediante pruebas pertinentes.
+
+### AC-09. Respaldo y recuperación de información
+
+**Descripción:** El sistema deberá contar con mecanismos para respaldar la información y recuperarla ante incidentes.
+
+**Escenario de calidad:** Cuando se produzca una pérdida de datos o un fallo que afecte a la base de datos, deberá existir un procedimiento documentado para recuperar la información desde una copia de seguridad válida.
+
+**Métrica propuesta:** Establecer una frecuencia inicial de respaldo diario y definir los periodos de conservación y los objetivos de recuperación según las necesidades institucionales.
+
+**Decisión arquitectónica relacionada:** Definir los procedimientos de copia de seguridad y restauración de Microsoft SQL Server en el entorno de despliegue seleccionado.
+
+**Prioridad:** Alta.
+
+**Validación:** Verificar la generación de respaldos y realizar pruebas periódicas de restauración en un entorno controlado.
+
+## 3. Priorización de los atributos de calidad
+
+| Código | Atributo de calidad | Prioridad |
+|---|---|---|
+| AC-01 | Disponibilidad | Alta |
+| AC-02 | Rendimiento | Alta |
+| AC-03 | Facilidad de uso | Media-alta |
+| AC-04 | Seguridad y privacidad | Alta |
+| AC-05 | Compatibilidad y funcionamiento en distintos dispositivos | Media-alta |
+| AC-06 | Trazabilidad y auditoría | Alta |
+| AC-07 | Capacidad de crecimiento | Alta |
+| AC-08 | Mantenibilidad y evolución | Alta |
+| AC-09 | Respaldo y recuperación de información | Alta |
+
+## 4. Relación con las decisiones arquitectónicas
+
+Los atributos de calidad influyen en la organización y las decisiones de diseño de la siguiente manera:
+
+| Atributos | Decisión o consideración arquitectónica |
 |---|---|
-| Estímulo | Un usuario registra un DNI para comprobar si ya existe en el padrón. |
-| Respuesta | El sistema consulta los registros y muestra el resultado de la validación. |
-| Medida | La respuesta deberá ser inferior a 0.5 segundos bajo una carga de prueba documentada con 15,000 beneficiarios. También se registrarán los tiempos de respuesta y las condiciones de ejecución. |
+| AC-01 | Definir el entorno de despliegue y los procedimientos de recuperación. |
+| AC-02 | Optimizar consultas y validar el rendimiento de Entity Framework Core 9 y Microsoft SQL Server. |
+| AC-03 | Diseñar formularios claros y consistentes con Razor y Bootstrap. |
+| AC-04 | Definir autenticación, autorización y protección de datos personales. |
+| AC-05 | Validar la interfaz en navegadores y dispositivos seleccionados. |
+| AC-06 | Definir eventos auditables y proteger los registros. |
+| AC-07 | Organizar módulos y validar el comportamiento con volúmenes representativos. |
+| AC-08 | Separar responsabilidades dentro del monolito modular. |
+| AC-09 | Definir copias de seguridad y procedimientos de restauración. |
 
-### AC01 – Disponibilidad y continuidad
+## 5. Consideraciones de validación
 
-| Elemento | Descripción |
-|---|---|
-| Estímulo | Un usuario intenta registrar información sin conexión a internet. |
-| Respuesta esperada | Si la funcionalidad offline está implementada, la aplicación conserva temporalmente el registro y permite intentar la sincronización cuando se recupere la conexión. |
-| Medida | Las pruebas comprobarán que no se pierdan registros, que los errores de sincronización puedan identificarse y que no se creen duplicados por reintentos. La disponibilidad mensual se medirá por separado. |
+Los atributos de calidad deberán evaluarse durante el desarrollo y las pruebas. En particular:
 
-### AC09 – Respaldo y recuperación
+- Los tiempos de respuesta deberán medirse en condiciones reproducibles.
+- La disponibilidad dependerá del entorno de despliegue y de su operación.
+- La compatibilidad deberá confirmarse con pruebas en los dispositivos seleccionados.
+- Las capacidades PWA y el funcionamiento sin conexión deberán probarse si se implementan.
+- La seguridad deberá evaluarse mediante revisiones de configuración y pruebas de acceso.
+- La auditoría deberá comprobarse mediante operaciones de prueba.
+- La recuperación deberá verificarse mediante restauraciones reales en un entorno controlado.
 
-| Elemento | Descripción |
-|---|---|
-| Estímulo | Se requiere recuperar información después de una pérdida de datos o una incidencia. |
-| Respuesta esperada | Se restaura una copia de seguridad válida en un entorno controlado. |
-| Medida | Se documentan la fecha del respaldo, el resultado de la restauración y el tiempo empleado. El periodo de conservación y los objetivos de recuperación se definirán para el proyecto. |
+Los valores establecidos son objetivos de diseño y no representan resultados de pruebas ya realizadas.
+
+## 6. Referencias relacionadas
+
+- [Historias de usuario](./02-historias-de-usuario.md)
+- [Requisitos funcionales](./03-requisitos-funcionales.md)
+- [Restricciones](./05-restricciones.md)
+- [Drivers arquitectónicos](./06-drivers-arquitectonicos.md)
+- [Requisitos no funcionales](./07-requisitos-no-funcionales.md)
+- [Enfoque arquitectónico](../arquitectura/enfoque-arquitectonico.md)
+- [Estilo arquitectónico](../arquitectura/estilo-arquitectonico.md)
+- [Modelo C4](../arquitectura/C4/README.md)

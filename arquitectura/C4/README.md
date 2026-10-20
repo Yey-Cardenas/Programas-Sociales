@@ -1,49 +1,91 @@
+# Modelo C4 — Sistema de Gestión de Programas Sociales de Huamanga
 
-# Modelo C4 del Sistema de Gestión de Programas Sociales
+## 1. Objetivo
 
-**Proyecto:** Sistema de Gestión de Programas Sociales – Huamanga  
-**Estado:** Propuesta de arquitectura; no implica que el sistema esté implementado o desplegado.
+Este directorio contiene los diagramas del modelo C4 propuesto para el Sistema de Gestión de Programas Sociales de Huamanga.
 
-## 1. Stack tecnológico
+El modelo permite representar el sistema desde diferentes niveles de detalle: su contexto, los contenedores tecnológicos, los componentes internos y una vista conceptual de código.
 
-- **Backend:** C# con ASP.NET Core 9 MVC.
-- **Frontend:** Vistas Razor (`.cshtml`), HTML5, CSS3 y Bootstrap.
-- **PWA:** Capacidades de funcionamiento limitado sin conexión y sincronización posterior, sujetas a implementación y pruebas.
-- **ORM:** Entity Framework Core 9.
+Los diagramas forman parte de la documentación académica de la arquitectura. Representan una propuesta que deberá validarse y actualizarse durante el desarrollo del sistema.
+
+## 2. Tecnologías y estilo arquitectónico
+
+La arquitectura documentada utiliza las siguientes tecnologías:
+
+- **Lenguaje:** C#.
+- **Plataforma:** .NET 9.
+- **Framework web:** ASP.NET Core MVC 9.
+- **Interfaz:** Razor (`.cshtml`), HTML5, CSS3 y Bootstrap.
+- **Acceso a datos:** Entity Framework Core 9.
 - **Base de datos:** Microsoft SQL Server.
-- **Estilo arquitectónico:** Monolito modular.
+- **Estilo arquitectónico:** monolito modular.
+- **Modelo de interfaz:** MVC.
 
-## 2. Diagramas de arquitectura
+La solución se organiza en módulos funcionales dentro de una misma aplicación. No se plantea una arquitectura de microservicios independientes.
 
-## 2. Diagramas de arquitectura
+El uso de Repository y Unit of Work no se considera obligatorio; se evaluará durante la implementación si aporta valor al diseño.
 
-1. [Nivel 1 — Contexto del sistema](C1-contexto.md)
-2. [Nivel 2 — Contenedores](C2-contenedores.md)
-3. [Nivel 3 — Componentes](C3-componentes.md)
-4. [Nivel 4 — Código (vista complementaria)](C4-codigo.md)
+## 3. Diagramas del modelo C4
 
-## 3. Descripción de los niveles
+| Nivel | Archivo | Propósito |
+|---|---|---|
+| C1 — Contexto | [C1-contexto.md](C1-contexto.md) | Muestra el sistema, sus usuarios y las entidades externas con las que podría interactuar. |
+| C2 — Contenedores | [C2-contenedores.md](C2-contenedores.md) | Representa el cliente web, la aplicación, el acceso a datos y las integraciones previstas. |
+| C3 — Componentes | [C3-componentes.md](C3-componentes.md) | Organiza los módulos funcionales, los servicios compartidos y el acceso a datos. |
+| C4 — Vista de código | [C4-codigo.md](C4-codigo.md) | Presenta un modelo UML conceptual de clases y sus relaciones. |
 
-- **Nivel 1 — Contexto:** identifica los usuarios, el sistema principal y las dependencias externas.
-- **Nivel 2 — Contenedores:** muestra la aplicación web, las capacidades PWA, la base de datos y sus comunicaciones.
-- **Nivel 3 — Componentes:** describe las responsabilidades internas de la aplicación y sus relaciones.
-- **Nivel 4 — Código:** presenta clases y secuencias ilustrativas para el registro de inscripciones.
-- **Despliegue físico:** propone una distribución de los elementos en un entorno de ejecución todavía por definir.
+## 4. Criterios de diseño
 
-## 4. Criterios de interpretación
+Los diagramas siguen los siguientes criterios:
 
-- El dirigente administra únicamente los registros de su comité asignado.
-- El personal municipal autorizado supervisa los registros y atiende las alertas que requieren revisión.
-- Los beneficiarios son destinatarios de notificaciones; no se consideran usuarios que inician sesión en el alcance actual.
-- La aplicación web utiliza MVC y Razor dentro de un monolito modular. La PWA forma parte de la misma solución y no constituye un frontend independiente.
-- Los padrones históricos se someten a validación antes de incorporarse a los registros centrales.
-- RENIEC y SISFOH se consideran posibles integraciones futuras, no dependencias confirmadas de la primera versión.
-- Las operaciones realizadas sin conexión no se consideran confirmadas hasta que el servidor procese correctamente la sincronización.
+1. **Uniformidad tecnológica:** todos los diagramas deben reflejar ASP.NET Core MVC 9, Entity Framework Core 9 y Microsoft SQL Server.
+2. **Monolito modular:** los módulos funcionales pertenecen a una misma aplicación y se separan por responsabilidades.
+3. **Separación de responsabilidades:** la presentación, la lógica de aplicación y el acceso a datos se representan de forma diferenciada.
+4. **Trazabilidad:** los módulos deben corresponder con los requisitos funcionales, las historias de usuario y los atributos de calidad documentados.
+5. **Claridad visual:** cada diagrama debe mostrar las relaciones principales sin sobrecargarlo con detalles innecesarios.
+6. **Coherencia:** los componentes del nivel C3 deben corresponder con los contenedores descritos en C2.
+7. **Carácter conceptual:** las clases, servicios e integraciones propuestos no se consideran implementados hasta que se verifiquen en el código fuente.
 
-## 5. Estado de la propuesta
+## 5. Consideraciones sobre los contenedores y las integraciones
 
-Los diagramas representan decisiones de diseño. Las clases, integraciones, funcionalidades offline y recursos de infraestructura descritos deben verificarse durante la implementación.
+### 5.1. Cliente web y capacidades PWA
 
-La plataforma concreta de alojamiento y la configuración de red se definirán antes del despliegue. Microsoft SQL Server es el motor de base de datos elegido; no se presupone que esté alojado en Azure.
+La interfaz se plantea para utilizarse desde un navegador web. Las capacidades PWA y el almacenamiento local se consideran parte de la experiencia del cliente, no una aplicación frontend independiente.
 
-Los diagramas se mantienen en Markdown con Mermaid para facilitar su lectura, edición y visualización en GitHub.
+El funcionamiento sin conexión y la sincronización posterior requieren diseño, implementación y pruebas específicas. Deben contemplarse la protección de los datos locales, los errores de sincronización y la resolución de conflictos.
+
+### 5.2. Base de datos
+
+Microsoft SQL Server es el motor de base de datos seleccionado. Entity Framework Core 9 se propone para el acceso a los datos.
+
+No se presupone que SQL Server esté alojado en Azure ni se establece un proveedor de alojamiento específico.
+
+### 5.3. Notificaciones
+
+El envío de avisos por SMS o WhatsApp se considera una posible integración externa. El proveedor, sus condiciones y la forma de integración deberán definirse antes de su implementación.
+
+### 5.4. Datos históricos e integraciones institucionales
+
+Los archivos históricos, como hojas de cálculo y registros existentes, pueden utilizarse como fuentes para la importación y validación de datos.
+
+RENIEC y SISFOH no se consideran dependencias confirmadas de la primera versión del sistema.
+
+## 6. Relación con la documentación del proyecto
+
+Los diagramas deben revisarse junto con los siguientes documentos:
+
+- [Enfoque arquitectónico](../enfoque-arquitectonico.md).
+- [Estilo arquitectónico](../estilo-arquitectonico.md).
+- [Actores del sistema](../../analisis-de-sistema/01-actores.md).
+- [Historias de usuario](../../analisis-de-sistema/02-historias-de-usuario.md).
+- [Requisitos funcionales](../../analisis-de-sistema/03-requisitos-funcionales.md).
+- [Atributos de calidad](../../analisis-de-sistema/04-atributos-de-calidad.md).
+- [Restricciones](../../analisis-de-sistema/05-restricciones.md).
+- [Drivers arquitectónicos](../../analisis-de-sistema/06-drivers-arquitectonicos.md).
+- [Requisitos no funcionales](../../analisis-de-sistema/07-requisitos-no-funcionales.md).
+
+## 7. Estado de la documentación
+
+Los diagramas representan la arquitectura propuesta para fines de análisis y documentación académica. Deben actualizarse cuando se tomen decisiones técnicas definitivas o se implemente el sistema.
+
+Antes de considerar completa la documentación, se debe verificar que los diagramas sean legibles, que sus relaciones correspondan con los requisitos y que todas las referencias a tecnologías coincidan con el `README.md` principal del repositorio.
